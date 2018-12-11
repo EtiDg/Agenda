@@ -2,6 +2,7 @@ package agenda.ihm.controller;
 
 import java.util.ArrayList;
 
+import agenda.ihm.model.Page;
 import agenda.process.object.*;
 
 public class InfoMR extends Page {

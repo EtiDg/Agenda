@@ -1,5 +1,7 @@
 package agenda.ihm.controller;
 
+import agenda.ihm.model.Page;
+
 public class Accueil extends Page{
 	
 	public Accueil(){

@@ -1,4 +1,4 @@
-package agenda.ihm.controller;
+package agenda.ihm.model;
 
 import agenda.process.object.*;
 

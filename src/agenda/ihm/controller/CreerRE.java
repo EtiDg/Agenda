@@ -1,5 +1,6 @@
 package agenda.ihm.controller;
 
+import agenda.ihm.model.Page;
 import agenda.process.object.*;
 
 public class CreerRE extends Page {
