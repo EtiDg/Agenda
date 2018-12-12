@@ -10,7 +10,7 @@ public class Main {
 	    * @param args the command line arguments
 	    */
 	   public static void main(String[] args) {
-		   SQLiteJDBCDriverConnection databaseDriver = new SQLiteJDBCDriverConnection();
+		   QueryManager databaseDriver = new QueryManager();
 		   databaseDriver.createTables();
 	   }
 	   

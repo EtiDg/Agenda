@@ -7,10 +7,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class SQLiteJDBCDriverConnection {
+public class QueryManager {
 	private static String url = "jdbc:sqlite:database/agenda.db"; 
 	
-	public SQLiteJDBCDriverConnection(){
+	public QueryManager(){
 		
 	}
 	
@@ -54,11 +54,13 @@ public class SQLiteJDBCDriverConnection {
                + ");";
        
        String creationLieu = "CREATE TABLE IF NOT EXISTS Lieu (\n"
-               + "	nom text PRIMARY KEY\n"
+    		   + "  id integer PRIMARY KEY, \n"
+               + "	nom text \n"
                + ");";
        
        String creationMonitrice = "CREATE TABLE IF NOT EXISTS Monitrice (\n"
-               + "	nom text PRIMARY KEY\n"
+    		   + "  id integer PRIMARY KEY, \n"
+               + "	nom text \n"
                + ");";
        
        String creationJourFerie = "CREATE TABLE IF NOT EXISTS JourFerie (\n"
@@ -70,9 +72,9 @@ public class SQLiteJDBCDriverConnection {
                + "	nom text, \n"
                + "  heureDebut integer,\n"
                + "  duree integer,\n"
-               + "  nomLieu text ,\n"
+               + "  idLieu integer ,\n"
                + "  date date ,\n"
-               + "  FOREIGN KEY  (nomLieu) REFERENCES Lieu(nom),\n"
+               + "  FOREIGN KEY  (idLieu) REFERENCES Lieu(id),\n"
                + "  FOREIGN KEY  (date) REFERENCES Date(date)\n"
                + ");";
        
@@ -81,9 +83,9 @@ public class SQLiteJDBCDriverConnection {
                + "  heureDebut integer,\n"
                + "  duree integer,\n"
                + "  date date ,\n"
-               + "  nomMonitrice text,\n"
+               + "  idMonitrice integer,\n"
                + "  FOREIGN KEY (date) REFERENCES Date(date),\n"
-               + "  FOREIGN KEY (nomMonitrice) REFERENCES Monitrice(nom)\n"
+               + "  FOREIGN KEY (idMonitrice) REFERENCES Monitrice(id)\n"
                + ");";
        
        String creationVacances = "CREATE TABLE IF NOT EXISTS Vacances (\n"
@@ -102,9 +104,9 @@ public class SQLiteJDBCDriverConnection {
                + ");";
        
        String creationRepriseMonitrice = "CREATE TABLE IF NOT EXISTS RepriseMonitrice (\n"
-    		   + " nomMonitrice text,\n"
+    		   + " idMonitrice integer,\n"
     		   + " idReprise integer,\n"
-    		   + " FOREIGN KEY (nomMonitrice) REFERENCES Monitrice(nom),\n"
+    		   + " FOREIGN KEY (idMonitrice) REFERENCES Monitrice(id),\n"
     		   + " FOREIGN KEY (idReprise) REFERENCES Reprise(id)\n"
     		   + ");";
        

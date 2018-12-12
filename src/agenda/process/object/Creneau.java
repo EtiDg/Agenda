@@ -6,15 +6,15 @@ import java.util.Calendar;
 public class Creneau {
 	
 	private int id;
-	private String nomMonitrice;
+	private int idMonitrice;
 	private Calendar date;
 	private int heureDebut;
 	private int duree;
 	
 	
-	public Creneau(String nomMonitrice, Date date, int heureDebut, int duree) {
+	public Creneau(int idMonitrice, Date date, int heureDebut, int duree) {
 		super();
-		this.nomMonitrice = nomMonitrice;
+		this.idMonitrice = idMonitrice;
 		this.date.setTime(date);
 		this.heureDebut = heureDebut;
 		this.duree = duree;
@@ -24,8 +24,8 @@ public class Creneau {
 		return id;
 	}
 	
-	public String getNomMonitrice() {
-		return nomMonitrice;
+	public int getIdMonitrice() {
+		return idMonitrice;
 	}
 	
 	public Date getDate() {

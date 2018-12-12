@@ -9,16 +9,16 @@ public class Reprise {
 	private int id;
 	private String nom;
 	private String nomGroupe;
-	private String nomLieu;
-	private ArrayList<String> monitrices;
+	private int idLieu;
+	private ArrayList<Integer> monitrices;
 	private Calendar date;
 	private int heureDebut;
 	private int duree;
 	
-	public Reprise(String nom, String nomGroupe, String nomLieu, Date date, int heureDebut, int duree){
+	public Reprise(String nom, String nomGroupe, int idLieu, Date date, int heureDebut, int duree){
 		this.nom = nom;
 		this.nomGroupe = nomGroupe;
-		this.nomLieu = nomLieu;
+		this.idLieu = idLieu;
 		this.date.setTime(date);
 		this.heureDebut = heureDebut;
 		this.duree = duree;
@@ -36,14 +36,18 @@ public class Reprise {
 		return nomGroupe;
 	}
 
-	public String getNomLieu() {
-		return nomLieu;
+	public int getIdLieu() {
+		return idLieu;
 	}
-
+	
+	public ArrayList<Integer> getMonitrices() {
+		return monitrices;
+	}
+	
 	public Date getDate() {
 		return new java.sql.Date(date.getTimeInMillis());
 	}
-	
+
 	public int getHeureDebut() {
 		return heureDebut;
 	}
