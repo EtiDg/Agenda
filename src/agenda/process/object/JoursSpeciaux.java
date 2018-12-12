@@ -1,5 +1,13 @@
 package agenda.process.object;
 
-public class JoursSpeciaux {
+import java.util.ArrayList;
 
+public class JoursSpeciaux {
+	private TreveHivernale treveHivernale;
+	private ArrayList<Vacances> vacances;
+	private ArrayList<JourFerie> joursFeries;
+	
+	public JoursSpeciaux(){
+		
+	}
 }

@@ -61,9 +61,8 @@ public class SQLiteJDBCDriverConnection {
                + "	nom text PRIMARY KEY\n"
                + ");";
        
-       String creationDate = "CREATE TABLE IF NOT EXISTS Date (\n"
+       String creationJourFerie = "CREATE TABLE IF NOT EXISTS JourFerie (\n"
                + "	date date PRIMARY KEY,\n"
-    		   + "  isFerie boolean\n"
                + ");";
        
        String creationReprise = "CREATE TABLE IF NOT EXISTS Reprise (\n"
@@ -72,10 +71,8 @@ public class SQLiteJDBCDriverConnection {
                + "  heureDebut integer,\n"
                + "  duree integer,\n"
                + "  nomLieu text ,\n"
-               + "  nomMonitrice text,\n "
                + "  date date ,\n"
                + "  FOREIGN KEY  (nomLieu) REFERENCES Lieu(nom),\n"
-               + "  FOREIGN KEY  (nomMonitrice) REFERENCES Monitrice(nom),\n"
                + "  FOREIGN KEY  (date) REFERENCES Date(date)\n"
                + ");";
        
@@ -104,6 +101,12 @@ public class SQLiteJDBCDriverConnection {
                + "  FOREIGN KEY (dateFin) REFERENCES Date(date)\n"
                + ");";
        
+       String creationRepriseMonitrice = "CREATE TABLE IF NOT EXISTS RepriseMonitrice (\n"
+    		   + " nomMonitrice text,\n"
+    		   + " idReprise integer,\n"
+    		   + " FOREIGN KEY (nomMonitrice) REFERENCES Monitrice(nom),\n"
+    		   + " FOREIGN KEY (idReprise) REFERENCES Reprise(id)\n"
+    		   + ");";
        
        try(Connection conn = DriverManager.getConnection(url);
     	   Statement stmt = conn.createStatement();
@@ -113,11 +116,13 @@ public class SQLiteJDBCDriverConnection {
 		    	   stmt.execute(creationGroupe);
 		    	   stmt.execute(creationLieu);
 		    	   stmt.execute(creationMonitrice);
-		    	   stmt.execute(creationDate);
+		    	   stmt.execute(creationJourFerie);
 		    	   stmt.execute(creationReprise);
 		    	   stmt.execute(creationCreneau);
 		    	   stmt.execute(creationVacances);
 		    	   stmt.execute(creationTreveHivernale);
+		    	   stmt.execute(creationRepriseMonitrice);
+
 
 	    	   }catch (SQLException e) {
 	           System.out.println(e.getMessage());
