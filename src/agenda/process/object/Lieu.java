@@ -9,6 +9,11 @@ public class Lieu {
 		this.nom = nom;
 	}
 	
+	public Lieu(int id, String nom){
+		this.id = id;
+		this.nom = nom;
+	}
+	
 	public int getId() {
 		return id;
 	}

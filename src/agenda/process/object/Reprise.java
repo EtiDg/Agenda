@@ -1,27 +1,52 @@
 package agenda.process.object;
 
 import java.sql.Date;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+
+import agenda.process.sql.QueryManager;
 
 public class Reprise {
 	
 	private int id;
 	private String nom;
-	private String nomGroupe;
-	private int idLieu;
-	private ArrayList<Integer> monitrices;
 	private Calendar date;
 	private int heureDebut;
 	private int duree;
+	private int idMR;
+	private Lieu lieu;
+	boolean isMonitricesUpdated = false;
+	private ArrayList<Monitrice> monitrices;
+
 	
-	public Reprise(String nom, String nomGroupe, int idLieu, Date date, int heureDebut, int duree){
+	public Reprise(String nom, Date date, int heureDebut, int duree, int idMR, Lieu lieu){
 		this.nom = nom;
-		this.nomGroupe = nomGroupe;
-		this.idLieu = idLieu;
 		this.date.setTime(date);
 		this.heureDebut = heureDebut;
 		this.duree = duree;
+		this.idMR= idMR;
+		this.lieu = lieu;
+	}
+
+	public Reprise(int id, String nom, Date date, int heureDebut, int duree, int idMR, Lieu lieu){
+		this.id = id;
+		this.nom = nom;
+		this.date.setTime(date);
+		this.heureDebut = heureDebut;
+		this.duree = duree;
+		this.idMR= idMR;
+		this.lieu = lieu;
+		isMonitricesUpdated = false;
+	}
+	
+	public void updateMonitrices(){
+		try{
+			monitrices = QueryManager.selectMonitricesDeReprise(id);
+		}catch(SQLException e){
+			System.out.println("erreur");
+		}
+		isMonitricesUpdated = true;
 	}
 	
 	public int getId() {
@@ -32,15 +57,18 @@ public class Reprise {
 		return nom;
 	}
 
-	public String getNomGroupe() {
-		return nomGroupe;
+	public int getIdMR() {
+		return idMR;
 	}
 
-	public int getIdLieu() {
-		return idLieu;
+	public Lieu getLieu() {
+		return lieu;
 	}
 	
-	public ArrayList<Integer> getMonitrices() {
+	public ArrayList<Monitrice> getMonitrices() {
+		if(!isMonitricesUpdated){
+			updateMonitrices();
+		}
 		return monitrices;
 	}
 	

@@ -5,7 +5,6 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 
 import agenda.process.object.*;
 
@@ -40,16 +39,29 @@ public class QueryBuilder {
 			"INSERT INTO TreveHivernale(dateDebut, dateFin) \n"
 			+ "VALUES (?,?);";
 	private static String ajoutRepriseMonitrice=
-			"INSERT INTO RepriseMonitrice(idMonitrice, idReprise) \n"
+			"INSERT INTO RepriseMonitrice(idReprise, idMonitrice) \n"
 			+ "VALUES (?,?);";
 	
 	// suppressions
+	private static String suppressionRepriseMonitrice = 
+			"DELETE FROM RepriseMonitrice"
+			+ "WHERE idMonitrice = ?";
 	private static String suppressionReprise = 
 			"DELETE FROM Reprise \n"
 			+ "WHERE id = ?";
-	private static String suppressionGroupe = 
-			"DELETE FROM Groupe \n"
-			+ "WHERE nom = ?";
+	private static String suppressionReprisesDeMonitrice = 
+			"DELETE FROM Reprise"
+			+ "WHERE id IN ("
+			+ "SELECT idReprise FROM RepriseMonitrice"
+			+ "WHERE idMonitrice = ?)";
+	private static String suppressionReprisesDeMonitriceUnique =
+			"DELETE FROM Reprise"
+			+ "WHERE id IN ("
+			+ "SELECT idReprise FROM RepriseMonitrice"
+		    + "GROUP BY idReprise"
+		    + "HAVING count(idMonitrice) = 1)"
+			+ "AND id IN ("
+			+ "SELECT id FROM Monitrice";
 	private static String suppressionModeleDeReprise = 
 			"DELETE FROM ModeleDeReprise \n"
 			+ "WHERE id = ?";
@@ -69,7 +81,7 @@ public class QueryBuilder {
 			"DELETE FROM Vacances\n"
 			+ "WHERE nom = ?";
 
-	//modification
+	// modification
 	private static String modificationReprise = 
 			"UPDATE Reprise \n"
 			+ "SET nom = ?, heureDebut = ?, duree = ? , idLieu = ?, date = ? \n"
@@ -85,151 +97,274 @@ public class QueryBuilder {
 	private static String modificationLieu = 
 			"UPDATE Lieu \n"
 			+ "SET nom = ?\n"
-			+ "WHERE nom = ?";
+			+ "WHERE id = ?";
 	private static String modificationMonitrice = 
 			"UPDATE Monitrice \n"
-			+ "SET \n"
-			+ "WHERE nom = ?";
+			+ "SET nom = ?\n"
+			+ "WHERE id = ?";
 	private static String modificationCreneau = 
 			"UPDATE Creneau \n"
-			+ "SET \n"
+			+ "SET heureDebut = ?, duree = ?, date = ? \n"
 			+ "WHERE id = ?";
-	private static String modificationJourFerie = 
-			"UPDATE JourFerie \n"
-			+ "SET \n"
-			+ "WHERE date = ?";
 	private static String modificationVacances = 
 			"UPDATE Vacances\n"
-			+ "SET \n"
+			+ "SET dateDebut = ?, dateFin = ?\n"
 			+ "WHERE nom = ?";
+	private static String modificationTreveHivernale =
+			"UPDATE Vacances\n"
+			+ "SET dateDebut = ?, dateFin = ?\n";
 	
+	// remontee d'infos
+	private static String selectListeGroupe =
+			"SELECT Groupe.nom , Groupe.isVacances, Groupe.isTreve, ModeleDeReprise.id, ModeleDeReprise.nom FROM Groupe \n"
+			+ "JOIN ModeleDeReprise ON Groupe.idMR = ModeleDeReprise.id";
+	private static String selectListeMRParticulier =
+			"SELECT ModeleDeReprise.id, ModeleDeReprise.nom FROM ModeleDeReprise \n"
+			+ "LEFT JOIN Groupe ON Groupe.idMR = ModeleDeReprise.id \n"
+			+ "WHERE Groupe.idMR IS NULL";
+	private static String selectListeMonitrice = 
+			"SELECT id, nom  FROM Monitrice";
+	private static String selectMonitricesDeReprise =
+			"SELECT Monitrice.id, Monitrice.nom  FROM Monitrice"
+			+ "JOIN RepriseMonitrice ON Monitrice.id = RepriseMonitrice.idMonitrice"
+			+ "WHERE RepriseMonitrice.idReprise = ?";
+	private static String selectListeLieu = 
+			"SELECT id, nom  FROM Monitrice"; 
+	private static String selectListeVacances =
+			"SELECT nom, dateDebut, dateFin FROM Vacances";
+	private static String selectCreneaux =
+			"SELECT id, date, heureDebut, duree FROM Creneau"
+			+ "WHERE idMonitrice = ?";
+	private static String selectListeJoursFeries =
+			"SELECT date FROM JoursFeries";
+	private static String selectTreveHivernale =
+			"SELECT  dateDebut, dateFin FROM TreveHivernale";
+	private static String selectReprisesDeModele = 
+			"SELECT Reprise.id, Reprise.nom, Reprise.date, Reprise.heureDebut, Reprise.duree, Lieu.id, Lieu.nom FROM Reprise"
+			+ "JOIN Lieu ON Lieu.id = Reprise.idLieu"
+			+ "WHERE Reprise.idMR = ?";
+	private static String selectReprisesDeSemaine = 
+			"SELECT Reprise.id, Reprise.nom, Reprise.date, Reprise.heureDebut, Reprise.duree, Reprise.idMR, Lieu.id, Lieu.nom  FROM Reprise"
+			+ "JOIN Lieu ON Lieu.id = Reprise.idLieu"
+			+ "WHERE strftime('%Y', Reprise.date) = ?"
+			+ "AND strftime('%W', Reprise.date) = ?"
+			+ "GROUP BY Reprise.id";
+
 	
+	// tests
+	private static String testCreneauMonitrice =
+			"SELECT id FROM Creneau \n"
+			+ "WHERE idMonitrice = ?"
+			+ "AND date = ?"
+			+ "AND heureDebut < ?\n"
+			+ "AND heureDebut + duree > ?";
+	private static String testConflitLieu =
+			"SELECT id FROM Reprise"
+			+ "WHERE idLieu = ?"
+			+ "AND date = ?"
+			+ "AND heureDebut < ?\n"
+			+ "AND heureDebut + duree > ?\n";
+	private static String testConflitMonitrice = 
+			"SELECT Reprise.id FROM Reprise \n"
+			+ "JOIN RepriseMonitrice ON Reprise.id = RepriseMonitrice.idMonitrice"
+			+ "WHERE Monitrice.idMonitrice = ?"
+			+ "AND Reprise.date = ?"
+			+ "AND Reprise.heureDebut < ?\n"
+			+ "AND Reprise.heureDebut + Reprise.duree > ?\n";
+
+	
+
 //*******************************************************************************
 // Requetes d'ajout	
 //*******************************************************************************	
 	
-	public static void ajoutReprise(Connection conn, PreparedStatement ps, Reprise reprise) throws SQLException{
-		ps = conn.prepareStatement(ajoutReprise);
-		ps.setInt(1,reprise.getId());
-		ps.setString(2,reprise.getNom());
-		ps.setInt(3,reprise.getHeureDebut());
-		ps.setInt(4,reprise.getDuree());
-		ps.setInt(5,reprise.getIdLieu());
-		ps.setDate(6,reprise.getDate());
+	public static PreparedStatement ajoutReprise(Connection conn) throws SQLException{
+		return conn.prepareStatement(ajoutReprise);
 	}
 	
-	public static void ajoutGroupe(Connection conn, PreparedStatement ps, Groupe groupe) throws SQLException{
-		ps = conn.prepareStatement(ajoutGroupe);
-		ps.setString(1,groupe.getNom());
-		ps.setBoolean(2,groupe.getIsVacances());
-		ps.setBoolean(3,groupe.getIsTreveHivernale());
+	public static PreparedStatement ajoutGroupe(Connection conn) throws SQLException{
+		return conn.prepareStatement(ajoutGroupe);
 	}
 	
-	public static void ajoutModeleDeReprise(Connection conn, PreparedStatement ps, ModeleDeReprise modeleDeReprise) throws SQLException{
-		ps = conn.prepareStatement(ajoutModeleDeReprise);
-		ps.setInt(1,modeleDeReprise.getId());
-		ps.setString(2,modeleDeReprise.getNom());
+	public static PreparedStatement ajoutModeleDeReprise(Connection conn) throws SQLException{
+		return conn.prepareStatement(ajoutModeleDeReprise);
+
 	}
 	
-	public static void ajoutLieu(Connection conn, PreparedStatement ps, Lieu lieu) throws SQLException{
-		ps = conn.prepareStatement(ajoutLieu);
-		ps.setInt(1, lieu.getId());
-		ps.setString(2,lieu.getNom());
+	public static PreparedStatement ajoutLieu(Connection conn) throws SQLException{
+		return conn.prepareStatement(ajoutLieu);
 	}
 	
-	public static void ajoutMonitrice(Connection conn, PreparedStatement ps, Monitrice monitrice) throws SQLException{
-		ps = conn.prepareStatement(ajoutMonitrice);
-		ps.setInt(1, monitrice.getId());
-		ps.setString(2,monitrice.getNom());
+	public static PreparedStatement ajoutMonitrice(Connection conn) throws SQLException{
+		return conn.prepareStatement(ajoutMonitrice);
 	}
 	
-	public static void ajoutCreneau(Connection conn, PreparedStatement ps, Creneau creneau) throws SQLException{
-		ps = conn.prepareStatement(ajoutCreneau);
-		ps.setInt(1,creneau.getId());
-		ps.setInt(2,creneau.getHeureDebut());
-		ps.setDate(3,creneau.getDate());
-		ps.setInt(4,creneau.getDuree());
-		ps.setInt(5,creneau.getIdMonitrice());
+	public static PreparedStatement ajoutCreneau(Connection conn) throws SQLException{
+		return conn.prepareStatement(ajoutCreneau);
 	}
 	
-	public static void ajoutJourFerie(Connection conn, PreparedStatement ps, JourFerie jourFerie) throws SQLException{
-		ps = conn.prepareStatement(ajoutJourFerie);
-		ps.setDate(1,jourFerie.getDate());
+	public static PreparedStatement ajoutJourFerie(Connection conn) throws SQLException{
+		return conn.prepareStatement(ajoutJourFerie);
 	}
 	
-	public static void ajoutVacances(Connection conn, PreparedStatement ps, Vacances vacances) throws SQLException{
-		ps = conn.prepareStatement(ajoutVacances);
-		ps.setString(1,vacances.getNom());
-		ps.setDate(2,vacances.getDateDebut());
-		ps.setDate(3,vacances.getDateFin());
+	public static PreparedStatement ajoutVacances(Connection conn) throws SQLException{
+		return conn.prepareStatement(ajoutVacances);
 	}
 	
-	public static void ajoutTreveHivernale(Connection conn, PreparedStatement ps, TreveHivernale treveHivernale) throws SQLException{
-		ps = conn.prepareStatement(ajoutTreveHivernale);
-		ps.setDate(1,treveHivernale.getDateDebut());
-		ps.setDate(2,treveHivernale.getDateFin());
+	public static PreparedStatement ajoutTreveHivernale(Connection conn) throws SQLException{
+		return conn.prepareStatement(ajoutTreveHivernale);
 	}
 	
-	public static void ajoutRepriseMonitrice(Connection conn, PreparedStatement ps, int idMonitrice, int idReprise) throws SQLException{
-		ps = conn.prepareStatement(ajoutRepriseMonitrice);
-		ps.setInt(1,idMonitrice);
-		ps.setInt(2,idReprise);
+	public static PreparedStatement ajoutRepriseMonitrice(Connection conn) throws SQLException{
+		return conn.prepareStatement(ajoutRepriseMonitrice);
 	}
 	
 //*******************************************************************************
 // Requetes de suppression
 //*******************************************************************************
 	
-	public static void suppressionReprise(Connection conn, PreparedStatement ps, int id) throws SQLException{
-		ps = conn.prepareStatement(suppressionReprise);
-		ps.setInt(1,id);
+	public static PreparedStatement supprimerRepriseMonitrice(Connection conn) throws SQLException{
+		return conn.prepareStatement(suppressionRepriseMonitrice);
 	}
 	
-	public static void suppressionGroupe(Connection conn, PreparedStatement ps, String nom) throws SQLException{
-		ps = conn.prepareStatement(suppressionGroupe);
-		ps.setString(1, nom);
+	public static PreparedStatement suppressionReprise(Connection conn) throws SQLException{
+		return conn.prepareStatement(suppressionReprise);
 	}
 	
-	public static void suppressionModeleDeReprise(Connection conn, PreparedStatement ps, int id) throws SQLException{
-		ps = conn.prepareStatement(suppressionModeleDeReprise);
-		ps.setInt(1, id);
+	public static PreparedStatement supprimerReprisesDeMonitrice(Connection conn) throws SQLException{
+		return conn.prepareStatement(suppressionReprisesDeMonitrice);
 	}
 	
-	public static void suppressionLieu(Connection conn, PreparedStatement ps, int id) throws SQLException{
-		ps = conn.prepareStatement(suppressionLieu);
-		ps.setInt(1, id);
+	public static PreparedStatement supprimerReprisesDeMonitriceUnique(Connection conn) throws SQLException{
+		return conn.prepareStatement(suppressionReprisesDeMonitriceUnique);
 	}
 	
-	public static void suppressionMonitrice(Connection conn, PreparedStatement ps, int id) throws SQLException{
-		ps = conn.prepareStatement(suppressionMonitrice);
-		ps.setInt(1, id);
+	public static PreparedStatement suppressionModeleDeReprise(Connection conn) throws SQLException{
+		return conn.prepareStatement(suppressionModeleDeReprise);
 	}
 	
-	public static void suppressionCreneau(Connection conn, PreparedStatement ps, int id) throws SQLException{
-		ps = conn.prepareStatement(suppressionCreneau);
-		ps.setInt(1, id);
+	public static PreparedStatement suppressionLieu(Connection conn) throws SQLException{
+		return conn.prepareStatement(suppressionLieu);
 	}
 	
-	public static void suppressionJourFerie(Connection conn, PreparedStatement ps, Date date) throws SQLException{
-		ps = conn.prepareStatement(suppressionJourFerie);
-		ps.setDate(1, date);
+	public static PreparedStatement suppressionMonitrice(Connection conn) throws SQLException{
+		return conn.prepareStatement(suppressionMonitrice);
 	}
 	
-	public static void suppressionVacances(Connection conn, PreparedStatement ps, String nom) throws SQLException{
-		ps = conn.prepareStatement(suppressionVacances);
-		ps.setString(1, nom);
+	public static PreparedStatement suppressionCreneau(Connection conn) throws SQLException{
+		return conn.prepareStatement(suppressionCreneau);
+	}
+	
+	public static PreparedStatement suppressionJourFerie(Connection conn) throws SQLException{
+		return conn.prepareStatement(suppressionJourFerie);
+	}
+	
+	public static PreparedStatement suppressionVacances(Connection conn) throws SQLException{
+		return conn.prepareStatement(suppressionVacances);
 	}
 	
 
 //*******************************************************************************
 //Requetes de modification
 //*******************************************************************************
-			
+	
+	public static PreparedStatement modificationReprise(Connection conn) throws SQLException{
+		return conn.prepareStatement(modificationReprise);
+	}
+	
+	public static PreparedStatement modificationGroupe(Connection conn) throws SQLException{
+		return conn.prepareStatement(modificationGroupe);
+	}
+	
+	public static PreparedStatement modificationModeleDeReprise(Connection conn) throws SQLException{
+		return conn.prepareStatement(modificationModeleDeReprise);
+	}
 	
 
+	public static PreparedStatement modificationLieu(Connection conn) throws SQLException{
+		return conn.prepareStatement(modificationLieu);
+	}
+	
+	public static PreparedStatement modificationMonitrice(Connection conn) throws SQLException{
+		return conn.prepareStatement(modificationMonitrice);
+	}
+	
+	public static PreparedStatement modificationCreneau(Connection conn) throws SQLException{
+		return conn.prepareStatement(modificationCreneau);
+	}
+	
+	public static PreparedStatement modificationVacances(Connection conn) throws SQLException{
+		return conn.prepareStatement(modificationVacances);
+	}
+	
+	public static PreparedStatement modificationTreveHivernale(Connection conn) throws SQLException{
+		return conn.prepareStatement(modificationTreveHivernale);
+	}
 	
 	
+
+//*******************************************************************************
+//Requetes de remontee d'infos
+//*******************************************************************************
+	public static PreparedStatement selectListeGroupe(Connection conn) throws SQLException{
+		return conn.prepareStatement(selectListeGroupe);
+	}
 	
+	public static PreparedStatement selectListeMRParticulier(Connection conn) throws SQLException{
+		return conn.prepareStatement(selectListeMRParticulier);
+	}
+	
+	public static PreparedStatement selectListeMonitrice(Connection conn) throws SQLException{
+		return conn.prepareStatement(selectListeMonitrice);
+	}
+	
+	public static PreparedStatement selectMonitricesDeReprise(Connection conn) throws SQLException{
+		return conn.prepareStatement(selectMonitricesDeReprise);
+	}
+	
+	public static PreparedStatement selectListeLieu(Connection conn) throws SQLException{
+		return conn.prepareStatement(selectListeLieu);
+	}
+	
+	public static PreparedStatement selectCreneaux(Connection conn) throws SQLException{
+		return conn.prepareStatement(selectCreneaux);
+	}
+	
+	public static PreparedStatement selectListeVacances(Connection conn) throws SQLException{
+		return conn.prepareStatement(selectListeVacances);
+	}
+	
+	public static PreparedStatement selectListeJoursFeries(Connection conn) throws SQLException{
+		return conn.prepareStatement(selectListeJoursFeries);
+	}
+	
+	public static PreparedStatement selectTreveHivernale(Connection conn) throws SQLException{
+		return conn.prepareStatement(selectTreveHivernale);
+	}
+	
+	public static PreparedStatement selectReprisesDeModele(Connection conn) throws SQLException{
+		return conn.prepareStatement(selectReprisesDeModele);
+	}
+	
+	public static PreparedStatement selectReprisesDeSemaine(Connection conn) throws SQLException{
+		return conn.prepareStatement(selectReprisesDeSemaine);
+	}
+	
+	
+//*******************************************************************************
+//Requetes de test
+//*******************************************************************************
+	public static PreparedStatement testCreneauMonitrice(Connection conn) throws SQLException{
+		return conn.prepareStatement(testCreneauMonitrice);
+	}
+	
+	public static PreparedStatement testConflitLieu(Connection conn) throws SQLException{
+		return conn.prepareStatement(testConflitLieu);
+	}
+	
+	public static PreparedStatement testConflitMonitrice(Connection conn) throws SQLException{
+		return conn.prepareStatement(testConflitMonitrice);
+	}
 	
 	
 }

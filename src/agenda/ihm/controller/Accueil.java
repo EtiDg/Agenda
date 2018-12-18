@@ -28,7 +28,7 @@ public class Accueil extends Page{
 		
 	}
 	
-	public void afficherMonitices(){
+	public void afficherMonitrices(){
 		
 	}
 }

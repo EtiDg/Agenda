@@ -5,13 +5,13 @@ public class Groupe {
 	private String nom;
 	private boolean isVacances;
 	private boolean isTreveHivernale;
-	private int idMR;
+	private ModeleDeReprise modeleDeReprise;
 	
-	public Groupe(String nom, boolean isVacances, boolean isTreveHivernale, int idMR){
+	public Groupe(String nom, boolean isVacances, boolean isTreveHivernale, ModeleDeReprise modeleDeReprise){
 		this.nom = nom;
 		this.isVacances = isVacances;
 		this.isTreveHivernale = isTreveHivernale;
-		this.idMR = idMR;
+		this.modeleDeReprise = modeleDeReprise;
 	}
 	
 	public Boolean getIsVacances() {
@@ -22,8 +22,8 @@ public class Groupe {
 		return isTreveHivernale;
 	}
 
-	public int getIdMR() {
-		return idMR;
+	public ModeleDeReprise getModeleDeReprise() {
+		return modeleDeReprise;
 	}
 
 	public String getNom(){

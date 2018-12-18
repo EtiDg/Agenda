@@ -5,7 +5,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import agenda.process.sql.*;
-public class Main {
+public class MainProcess {
 	   /**
 	    * @param args the command line arguments
 	    */

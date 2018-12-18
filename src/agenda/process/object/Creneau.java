@@ -13,7 +13,14 @@ public class Creneau {
 	
 	
 	public Creneau(int idMonitrice, Date date, int heureDebut, int duree) {
-		super();
+		this.idMonitrice = idMonitrice;
+		this.date.setTime(date);
+		this.heureDebut = heureDebut;
+		this.duree = duree;
+	}
+	
+	public Creneau(int id, int idMonitrice, Date date, int heureDebut, int duree) {
+		this.id = id;
 		this.idMonitrice = idMonitrice;
 		this.date.setTime(date);
 		this.heureDebut = heureDebut;
