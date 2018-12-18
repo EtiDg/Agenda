@@ -4,7 +4,6 @@ import agenda.process.object.*;
 
 public class GestionMR extends Page {
 	
-	private ListeMR listeMR;
 	
 	public GestionMR(){
 		

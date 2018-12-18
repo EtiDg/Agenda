@@ -1,15 +1,17 @@
-package agenda.ihm.controller;
+package agenda.ihm.controller.page;
 
 import agenda.process.object.ModeleDeReprise;
 
-public class CreerGroupe {
+import agenda.ihm.model.Page;
+import agenda.process.object.*;
 
+public class CreerMRParticulier {
+	
 	private ModeleDeReprise modeleDeReprise;
 	
-	public CreerGroupe(){
+	public CreerMRParticulier(){
 		
 	}
-	
 	public void valider(){
 		
 	}
@@ -21,5 +23,4 @@ public class CreerGroupe {
 	public void afficherCalendrier(){
 		
 	}
-	
 }
