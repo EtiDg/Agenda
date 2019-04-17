@@ -7,7 +7,7 @@ import agenda.process.sql.QueryManager;
 
 public class ModeleDeReprise {
 	
-	private int id;
+	private long id;
 	private String nom;
 	boolean isReprisesUpdated;
 	private ArrayList<Reprise> reprises;
@@ -15,9 +15,10 @@ public class ModeleDeReprise {
 	public ModeleDeReprise(String nom){
 		this.nom = nom;
 		isReprisesUpdated = false;
+		id = IdGenerator.getId();
 	}
 	
-	public ModeleDeReprise(int id, String nom){
+	public ModeleDeReprise(long id, String nom){
 		this.id = id;
 		this.nom = nom;
 		isReprisesUpdated = false;
@@ -32,12 +33,16 @@ public class ModeleDeReprise {
 		}
 	}
 
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 
 	public String getNom() {
 		return nom;
+	}
+	
+	public void setNom(String nom) {
+		this.nom = nom;
 	}
 	
 	public ArrayList<Reprise> getReprises() {
@@ -47,5 +52,9 @@ public class ModeleDeReprise {
 		return reprises;
 	}
 
+	@Override
+	public String toString(){
+		return nom + " " + id;
+	}
 	
 }

@@ -1,7 +1,5 @@
 package agenda.ihm.model;
 
-import agenda.process.object.*;
-
 public class GestionMR extends Page {
 	
 	

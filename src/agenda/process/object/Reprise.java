@@ -2,39 +2,41 @@ package agenda.process.object;
 
 import java.sql.Date;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import agenda.process.sql.QueryManager;
 
 public class Reprise {
 	
-	private int id;
+	private long id;
 	private String nom;
-	private Calendar date;
+	private LocalDate date;
 	private int heureDebut;
-	private int duree;
-	private int idMR;
+	private int heureFin;
+	private long idMR;
 	private Lieu lieu;
 	boolean isMonitricesUpdated = false;
 	private ArrayList<Monitrice> monitrices;
 
 	
-	public Reprise(String nom, Date date, int heureDebut, int duree, int idMR, Lieu lieu){
+	public Reprise(String nom, LocalDate date, int heureDebut, int heureFin, long idMR, Lieu lieu){
 		this.nom = nom;
-		this.date.setTime(date);
+		this.date = date;
 		this.heureDebut = heureDebut;
-		this.duree = duree;
+		this.heureFin = heureFin;
 		this.idMR= idMR;
 		this.lieu = lieu;
+		id = IdGenerator.getId();
 	}
 
-	public Reprise(int id, String nom, Date date, int heureDebut, int duree, int idMR, Lieu lieu){
+	public Reprise(long id, String nom, LocalDate date, int heureDebut, int heureFin, long idMR, Lieu lieu){
 		this.id = id;
 		this.nom = nom;
-		this.date.setTime(date);
+		this.date = date;
 		this.heureDebut = heureDebut;
-		this.duree = duree;
+		this.heureFin = heureFin;
 		this.idMR= idMR;
 		this.lieu = lieu;
 		isMonitricesUpdated = false;
@@ -44,12 +46,15 @@ public class Reprise {
 		try{
 			monitrices = QueryManager.selectMonitricesDeReprise(id);
 		}catch(SQLException e){
-			System.out.println("erreur");
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+			System.out.println("erreur lors de la mise à jour des monitrices");
+			System.exit(0);
 		}
 		isMonitricesUpdated = true;
 	}
 	
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 
@@ -57,7 +62,7 @@ public class Reprise {
 		return nom;
 	}
 
-	public int getIdMR() {
+	public long getIdMR() {
 		return idMR;
 	}
 
@@ -71,17 +76,32 @@ public class Reprise {
 		}
 		return monitrices;
 	}
+
+	public LocalDate getDate() {
+		return date;
+	}
 	
-	public Date getDate() {
-		return new java.sql.Date(date.getTimeInMillis());
+	public Date getSQLDate() {
+		return Date.valueOf(date);
 	}
 
 	public int getHeureDebut() {
 		return heureDebut;
 	}
 
-	public int getDuree() {
-		return duree;
+	public int getHeureFin() {
+		return heureFin;
+	}
+	
+	@Override
+	public String toString(){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		return nom + ":    " 
+			+ formatter.format(date) + "    " 
+			+ ((heureDebut-heureDebut%60)/60) + "h" + heureDebut%60 + "-" 
+			+ ((heureFin-heureFin%60)/60) + "h" + heureFin%60
+			+ " " + lieu.getNom() + " " + lieu.getId()
+			+ " " + idMR;
 	}
 
 }

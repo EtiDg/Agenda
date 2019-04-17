@@ -1,19 +1,15 @@
 package agenda.process.sql;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
-
-import agenda.process.object.*;
 
 public class QueryBuilder {
 	
 	// insertions
 	private static String ajoutReprise = 
-			"INSERT INTO Reprise(id, nom, heureDebut, duree, idLieu, date) \n"
-			+ "VALUES (?,?,?,?,?,?);";
+			"INSERT INTO Reprise(id, nom, heureDebut, heureFin, idMR, idLieu, date) \n"
+			+ "VALUES (?,?,?,?,?,?,?);";
 	private static String ajoutGroupe =
 			"INSERT INTO Groupe(nom, isVacances, isTreve, idMR) \n"
 			+ "VALUES (?,?,?,?);";
@@ -27,7 +23,7 @@ public class QueryBuilder {
 			"INSERT INTO Monitrice(id, nom) \n"
 			+ "VALUES (?,?);";
 	private static String ajoutCreneau =
-			"INSERT INTO Creneau(id, heureDebut, duree, date, idMonitrice) \n"
+			"INSERT INTO Creneau(id, heureDebut, heureFin, date, idMonitrice) \n"
 			+ "VALUES (?,?,?,?,?);";
 	private static String ajoutJourFerie =
 			"INSERT INTO JourFerie(date) \n"
@@ -44,133 +40,133 @@ public class QueryBuilder {
 	
 	// suppressions
 	private static String suppressionRepriseMonitrice = 
-			"DELETE FROM RepriseMonitrice"
-			+ "WHERE idMonitrice = ?";
+			"DELETE FROM RepriseMonitrice \n"
+			+ "WHERE idMonitrice = ?;";
 	private static String suppressionReprise = 
 			"DELETE FROM Reprise \n"
-			+ "WHERE id = ?";
+			+ "WHERE id = ?;";
 	private static String suppressionReprisesDeMonitrice = 
-			"DELETE FROM Reprise"
-			+ "WHERE id IN ("
-			+ "SELECT idReprise FROM RepriseMonitrice"
-			+ "WHERE idMonitrice = ?)";
+			"DELETE FROM Reprise \n"
+			+ "WHERE id IN ( \n"
+			+ "SELECT idReprise FROM RepriseMonitrice \n"
+			+ "WHERE idMonitrice = ?);";
 	private static String suppressionReprisesDeMonitriceUnique =
-			"DELETE FROM Reprise"
-			+ "WHERE id IN ("
-			+ "SELECT idReprise FROM RepriseMonitrice"
-		    + "GROUP BY idReprise"
-		    + "HAVING count(idMonitrice) = 1)"
-			+ "AND id IN ("
-			+ "SELECT id FROM Monitrice";
+			"DELETE FROM Reprise \n"
+			+ "WHERE id IN ( \n"
+			+ "SELECT idReprise FROM RepriseMonitrice \n"
+		    + "GROUP BY idReprise \n"
+		    + "HAVING count(idMonitrice) = 1) \n"
+			+ "AND id IN ( \n"
+			+ "SELECT id FROM Monitrice"; // A terminer
 	private static String suppressionModeleDeReprise = 
 			"DELETE FROM ModeleDeReprise \n"
-			+ "WHERE id = ?";
+			+ "WHERE id = ?;";
 	private static String suppressionLieu = 
 			"DELETE FROM Lieu \n"
-			+ "WHERE id = ?";
+			+ "WHERE id = ?;";
 	private static String suppressionMonitrice = 
 			"DELETE FROM Monitrice \n"
-			+ "WHERE id = ?";
+			+ "WHERE id = ?;";
 	private static String suppressionCreneau = 
 			"DELETE FROM Creneau \n"
-			+ "WHERE id = ?";
+			+ "WHERE id = ?;";
 	private static String suppressionJourFerie = 
 			"DELETE FROM JourFerie \n"
-			+ "WHERE date = ?";
+			+ "WHERE date = ?;";
 	private static String suppressionVacances = 
-			"DELETE FROM Vacances\n"
-			+ "WHERE nom = ?";
+			"DELETE FROM Vacances \n"
+			+ "WHERE nom = ?;";
 
 	// modification
 	private static String modificationReprise = 
 			"UPDATE Reprise \n"
-			+ "SET nom = ?, heureDebut = ?, duree = ? , idLieu = ?, date = ? \n"
-			+ "WHERE id = ?";
+			+ "SET nom = ?, heureDebut = ?, heureFin = ? , idLieu = ?, date = ? \n"
+			+ "WHERE id = ?;";
 	private static String modificationGroupe = 
 			"UPDATE Groupe \n"
 			+ "SET nom = ?, isVacances = ?, isTreve = ? \n"
-			+ "WHERE nom = ?";
+			+ "WHERE nom = ?;";
 	private static String modificationModeleDeReprise = 
 			"UPDATE ModeleDeReprise \n"
 			+ "SET  nom = ? \n"
-			+ "WHERE id = ?";
+			+ "WHERE id = ?;";
 	private static String modificationLieu = 
 			"UPDATE Lieu \n"
-			+ "SET nom = ?\n"
-			+ "WHERE id = ?";
+			+ "SET nom = ? \n"
+			+ "WHERE id = ?;";
 	private static String modificationMonitrice = 
 			"UPDATE Monitrice \n"
-			+ "SET nom = ?\n"
-			+ "WHERE id = ?";
+			+ "SET nom = ? \n"
+			+ "WHERE id = ?;";
 	private static String modificationCreneau = 
 			"UPDATE Creneau \n"
-			+ "SET heureDebut = ?, duree = ?, date = ? \n"
-			+ "WHERE id = ?";
+			+ "SET heureDebut = ?, heureFin = ?, date = ? \n"
+			+ "WHERE id = ?;";
 	private static String modificationVacances = 
-			"UPDATE Vacances\n"
-			+ "SET dateDebut = ?, dateFin = ?\n"
-			+ "WHERE nom = ?";
+			"UPDATE Vacances \n"
+			+ "SET dateDebut = ?, dateFin = ? \n"
+			+ "WHERE nom = ?;";
 	private static String modificationTreveHivernale =
-			"UPDATE Vacances\n"
-			+ "SET dateDebut = ?, dateFin = ?\n";
+			"UPDATE TreveHivernale \n"
+			+ "SET dateDebut = ?, dateFin = ?;";
 	
 	// remontee d'infos
 	private static String selectListeGroupe =
 			"SELECT Groupe.nom , Groupe.isVacances, Groupe.isTreve, ModeleDeReprise.id, ModeleDeReprise.nom FROM Groupe \n"
-			+ "JOIN ModeleDeReprise ON Groupe.idMR = ModeleDeReprise.id";
+			+ "JOIN ModeleDeReprise ON Groupe.idMR = ModeleDeReprise.id;";
 	private static String selectListeMRParticulier =
 			"SELECT ModeleDeReprise.id, ModeleDeReprise.nom FROM ModeleDeReprise \n"
 			+ "LEFT JOIN Groupe ON Groupe.idMR = ModeleDeReprise.id \n"
-			+ "WHERE Groupe.idMR IS NULL";
+			+ "WHERE Groupe.idMR IS NULL;";
 	private static String selectListeMonitrice = 
-			"SELECT id, nom  FROM Monitrice";
+			"SELECT id, nom  FROM Monitrice;";
 	private static String selectMonitricesDeReprise =
-			"SELECT Monitrice.id, Monitrice.nom  FROM Monitrice"
-			+ "JOIN RepriseMonitrice ON Monitrice.id = RepriseMonitrice.idMonitrice"
-			+ "WHERE RepriseMonitrice.idReprise = ?";
+			"SELECT Monitrice.id, Monitrice.nom FROM Monitrice \n"
+			+ "JOIN RepriseMonitrice ON Monitrice.id = RepriseMonitrice.idMonitrice \n"
+			+ "WHERE RepriseMonitrice.idReprise = ?;";
 	private static String selectListeLieu = 
-			"SELECT id, nom  FROM Monitrice"; 
+			"SELECT id, nom  FROM Lieu;"; 
 	private static String selectListeVacances =
-			"SELECT nom, dateDebut, dateFin FROM Vacances";
+			"SELECT nom, dateDebut, dateFin FROM Vacances;";
 	private static String selectCreneaux =
-			"SELECT id, date, heureDebut, duree FROM Creneau"
-			+ "WHERE idMonitrice = ?";
+			"SELECT id, date, heureDebut, heureFin FROM Creneau \n"
+			+ "WHERE idMonitrice = ?;";
 	private static String selectListeJoursFeries =
-			"SELECT date FROM JoursFeries";
+			"SELECT date FROM JourFerie;";
 	private static String selectTreveHivernale =
-			"SELECT  dateDebut, dateFin FROM TreveHivernale";
+			"SELECT  dateDebut, dateFin FROM TreveHivernale;";
 	private static String selectReprisesDeModele = 
-			"SELECT Reprise.id, Reprise.nom, Reprise.date, Reprise.heureDebut, Reprise.duree, Lieu.id, Lieu.nom FROM Reprise"
-			+ "JOIN Lieu ON Lieu.id = Reprise.idLieu"
-			+ "WHERE Reprise.idMR = ?";
+			"SELECT Reprise.id, Reprise.nom, Reprise.date, Reprise.heureDebut, Reprise.heureFin, Lieu.id, Lieu.nom FROM Reprise \n"
+			+ "JOIN Lieu ON Lieu.id = Reprise.idLieu \n"
+			+ "AND Reprise.idMR = ?;";
 	private static String selectReprisesDeSemaine = 
-			"SELECT Reprise.id, Reprise.nom, Reprise.date, Reprise.heureDebut, Reprise.duree, Reprise.idMR, Lieu.id, Lieu.nom  FROM Reprise"
-			+ "JOIN Lieu ON Lieu.id = Reprise.idLieu"
-			+ "WHERE strftime('%Y', Reprise.date) = ?"
-			+ "AND strftime('%W', Reprise.date) = ?"
-			+ "GROUP BY Reprise.id";
+			"SELECT Reprise.id, Reprise.nom, Reprise.date, Reprise.heureDebut, Reprise.heureFin, Reprise.idMR, Lieu.id, Lieu.nom  FROM Reprise \n"
+			+ "JOIN Lieu ON Lieu.id = Reprise.idLieu \n"
+			+ "WHERE strftime('%Y', Reprise.date) = ? \n"
+			+ "AND strftime('%W', Reprise.date) = ? \n"
+			+ "GROUP BY Reprise.id;";
 
 	
 	// tests
 	private static String testCreneauMonitrice =
 			"SELECT id FROM Creneau \n"
-			+ "WHERE idMonitrice = ?"
-			+ "AND date = ?"
-			+ "AND heureDebut < ?\n"
-			+ "AND heureDebut + duree > ?";
+			+ "WHERE idMonitrice = ? \n"
+			+ "AND date = ? \n"
+			+ "AND heureDebut < ? \n"
+			+ "AND heureFin > ?;";
 	private static String testConflitLieu =
-			"SELECT id FROM Reprise"
+			"SELECT id FROM Reprise \n"
 			+ "WHERE idLieu = ?"
-			+ "AND date = ?"
-			+ "AND heureDebut < ?\n"
-			+ "AND heureDebut + duree > ?\n";
+			+ "AND date = ? \n"
+			+ "AND heureDebut < ? \n"
+			+ "AND heureFin > ?;";
 	private static String testConflitMonitrice = 
 			"SELECT Reprise.id FROM Reprise \n"
-			+ "JOIN RepriseMonitrice ON Reprise.id = RepriseMonitrice.idMonitrice"
-			+ "WHERE Monitrice.idMonitrice = ?"
-			+ "AND Reprise.date = ?"
-			+ "AND Reprise.heureDebut < ?\n"
-			+ "AND Reprise.heureDebut + Reprise.duree > ?\n";
+			+ "JOIN RepriseMonitrice ON Reprise.id = RepriseMonitrice.idMonitrice \n"
+			+ "WHERE Monitrice.idMonitrice = ? \n"
+			+ "AND Reprise.date = ? \n"
+			+ "AND Reprise.heureDebut < ? \n"
+			+ "AND Reprise.heureFin > ?;";
 
 	
 

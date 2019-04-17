@@ -7,7 +7,7 @@ import agenda.process.sql.QueryManager;
 
 public class Monitrice {
 
-	private int id;
+	private long id;
 	private String nom;
 	boolean isCreneauxUpdated;
 	private ArrayList<Creneau> creneaux;
@@ -15,9 +15,10 @@ public class Monitrice {
 	public Monitrice(String nom){
 		this.nom = nom;
 		isCreneauxUpdated = false;
+		id = IdGenerator.getId();
 	}
 	
-	public Monitrice(int id, String nom){
+	public Monitrice(long id, String nom){
 		this.id = id;
 		this.nom = nom;
 		isCreneauxUpdated = false;
@@ -32,7 +33,7 @@ public class Monitrice {
 		isCreneauxUpdated = true;
 	}
 	
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 	

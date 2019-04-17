@@ -1,0 +1,26 @@
+.calendrier{
+	-fx-background-color: gray;
+	-fx-border-color: gray;
+	-fx-border-width: 0 1 1 0;
+}
+
+.right_border{
+	-fx-border-color: lightgray;
+	-fx-border-width: 0 1 0 0;
+}
+
+.white_background{
+	-fx-background-color: white;
+}
+
+.blue_background{
+	-fx-background-color: lightblue ;
+}
+
+.gray_background{
+	-fx-background-color: lightgray;
+}
+
+.bluegray_background{
+	-fx-background-color: rgb(150, 150, 255);
+}

@@ -1,50 +1,54 @@
 package agenda.process.object;
 
 import java.sql.Date;
-import java.util.Calendar;
+import java.time.LocalDate;
 
 public class Creneau {
 	
-	private int id;
-	private int idMonitrice;
-	private Calendar date;
+	private long id;
+	private long idMonitrice;
+	private LocalDate date;
 	private int heureDebut;
-	private int duree;
+	private int heureFin;
 	
 	
-	public Creneau(int idMonitrice, Date date, int heureDebut, int duree) {
+	public Creneau(long idMonitrice, LocalDate date, int heureDebut, int heureFin) {
 		this.idMonitrice = idMonitrice;
-		this.date.setTime(date);
+		this.date = date;
 		this.heureDebut = heureDebut;
-		this.duree = duree;
+		this.heureFin = heureFin;
+		id = IdGenerator.getId();
 	}
 	
-	public Creneau(int id, int idMonitrice, Date date, int heureDebut, int duree) {
+	public Creneau(long id, long idMonitrice, LocalDate date, int heureDebut, int heureFin) {
 		this.id = id;
 		this.idMonitrice = idMonitrice;
-		this.date.setTime(date);
+		this.date = date;
 		this.heureDebut = heureDebut;
-		this.duree = duree;
+		this.heureFin = heureFin;
 	}
 	
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 	
-	public int getIdMonitrice() {
+	public long getIdMonitrice() {
 		return idMonitrice;
 	}
 	
-	public Date getDate() {
-		return new java.sql.Date(date.getTimeInMillis());
+	public LocalDate getDate(){
+		return date;
+	}
+	public Date getSQLDate() {
+		return Date.valueOf(date);
 	}
 	
 	public int getHeureDebut() {
 		return heureDebut;
 	}
 
-	public int getDuree() {
-		return duree;
+	public int getHeureFin() {
+		return heureFin;
 	}
 	
 	

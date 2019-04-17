@@ -1,24 +1,31 @@
 package agenda.process.object;
 
 import java.sql.Date;
-import java.util.Calendar;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class TreveHivernale {
 
-	private Calendar dateDebut;
-	private Calendar dateFin;
+	private LocalDate dateDebut;
+	private LocalDate dateFin;
 	
-	public TreveHivernale(Date dateDebut, Date dateFin){
-		this.dateDebut.setTime(dateDebut);
-		this.dateFin.setTime(dateFin); 
+	public TreveHivernale(LocalDate dateDebut, LocalDate dateFin){
+		this.dateDebut = dateDebut;
+		this.dateFin = dateFin;
 	}
 
-	public Date getDateDebut() {
-		return new java.sql.Date(dateDebut.getTimeInMillis());
+	public Date getSQLDateDebut() {
+		return Date.valueOf(dateDebut);
 	}
 
-	public Date getDateFin() {
-		return new java.sql.Date(dateFin.getTimeInMillis());
+	public Date getSQLDateFin() {
+		return Date.valueOf(dateFin);
+	}
+	
+	@Override
+	public String toString(){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		return formatter.format(dateDebut) + " - " + formatter.format(dateFin);
 	}
 	
 }
