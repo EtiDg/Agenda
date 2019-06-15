@@ -24,3 +24,15 @@
 .bluegray_background{
 	-fx-background-color: rgb(150, 150, 255);
 }
+
+.treveHivernale_background{
+	-fx-background-color: rgb(100, 100, 200);
+}
+
+.vacances_background{
+	-fx-background-color: lawngreen;
+}
+
+.jourFerie_background{
+	-fx-background-color: coral;
+}

@@ -54,7 +54,7 @@ public class ModeleDeReprise {
 
 	@Override
 	public String toString(){
-		return nom + " " + id;
+		return nom;
 	}
 	
 }

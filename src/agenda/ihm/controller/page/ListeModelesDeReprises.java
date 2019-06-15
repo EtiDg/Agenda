@@ -9,7 +9,6 @@ import agenda.ihm.controller.page.CreerMRParticulier;
 import agenda.ihm.controller.widget.Liste;
 import agenda.ihm.event.AfficherModeleDeRepriseEvent;
 import agenda.ihm.event.NouvellePageEvent;
-import agenda.ihm.event.NouvelleRepriseExceptionnelleEvent;
 import agenda.process.object.ModeleDeReprise;
 import agenda.process.sql.QueryManager;
 import javafx.collections.ListChangeListener;
@@ -82,7 +81,7 @@ public class ListeModelesDeReprises extends AnchorPane {
 	}
 
 	public void handleNouvelleRepriseExceptionnelle(ActionEvent e){
-		fireEvent(new NouvelleRepriseExceptionnelleEvent());
+		//fireEvent(new NouvelleRepriseExceptionnelleEvent());
 	}
 
 	public void supprimerModeleDeReprise(ModeleDeReprise modeleDeReprise){

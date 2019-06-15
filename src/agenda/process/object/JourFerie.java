@@ -12,6 +12,10 @@ public class JourFerie {
 		this.date = date;
 	}
 	
+	public LocalDate getDate(){
+		return date;
+	}
+	
 	public Date getSQLDate(){
 		return Date.valueOf(date);
 	}

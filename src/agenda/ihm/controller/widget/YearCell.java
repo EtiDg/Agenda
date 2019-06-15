@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
+import agenda.process.object.JoursSpeciaux;
 import agenda.CalendarMaps;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
@@ -13,18 +14,23 @@ import javafx.scene.control.Separator;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 
 public class YearCell extends Cell{
 	
 	protected LocalDate date;
+	boolean isTreveHivernale;
+	boolean isVacances;
 	protected HBox hBox = new HBox();
 	protected Label jourT = new Label();
 	protected Label jourN = new Label();
 	
-	public YearCell(int id, LocalDate date){
+	public YearCell(int id, LocalDate date, boolean isTreveHivernale, boolean isVacances){
 		super(id);
 		setDate(date);
+		this.isTreveHivernale = isTreveHivernale;
+		this.isVacances = isVacances;
 		GridPane.setHgrow(this, Priority.ALWAYS);
 		GridPane.setVgrow(this, Priority.ALWAYS);
 		AnchorPane.setTopAnchor(hBox, 0.0);
@@ -36,6 +42,24 @@ public class YearCell extends Cell{
 		jourN.setPrefWidth(15);
 		jourN.getStyleClass().add("right_border");
 		hBox.getChildren().addAll(jourT, jourN);
+		if (isTreveHivernale && JoursSpeciaux.isTreveHivernale(date)){
+			Pane pane = new Pane();
+			pane.getStyleClass().add("treveHivernale_background");
+			pane.setPrefWidth(20);
+			hBox.getChildren().add(pane);
+		}
+		if (isVacances && JoursSpeciaux.isVacances(date)){
+			Pane pane = new Pane();
+			pane.getStyleClass().add("vacances_background");
+			pane.setPrefWidth(20);
+			hBox.getChildren().add(pane);
+		}
+		if (JoursSpeciaux.isFerie(date)){
+			Pane pane = new Pane();
+			pane.getStyleClass().add("jourFerie_background");
+			pane.setPrefWidth(20);
+			hBox.getChildren().add(pane);
+		}
 	    //hBox.setPadding(new Insets(0, 5, 0, 5));
 	    hBox.setSpacing(1);
 

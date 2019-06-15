@@ -21,9 +21,11 @@ public class CalendrierValidationModele extends AnchorPane{
 	ArrayList<Reprise> reprises;
 	DateManagement calendrier;
 	int annee;
+	boolean isTreveHivernale;
+	boolean isVacances;
 	@FXML BorderPane borderPane;
 	
-	public CalendrierValidationModele(ArrayList<Reprise> reprises){
+	public CalendrierValidationModele(ArrayList<Reprise> reprises, boolean isTreveHivernale, boolean isVacances){
 		FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("ihm/view/page/CalendrierValidationModele.fxml"));
 		fxmlLoader.setRoot(this);
 		fxmlLoader.setController(this);
@@ -33,8 +35,10 @@ public class CalendrierValidationModele extends AnchorPane{
 			throw new RuntimeException(exception);
 		}
 		this.reprises = reprises;
+		this.isTreveHivernale = isTreveHivernale;
+		this.isVacances = isVacances;
 		annee = Year.now().getValue();
-		calendrier = new DateManagement(true);
+		calendrier = new DateManagement(true, isTreveHivernale, isVacances);
 		calendrier.displayYear(annee);
 		setSelected();
 		borderPane.setCenter(calendrier);
@@ -55,7 +59,7 @@ public class CalendrierValidationModele extends AnchorPane{
 		for (int i =0; i<selectedDates.size(); i++){
 			nouvelleReprises.add(new Reprise(reprise.getNom(), selectedDates.get(i), 
 					reprise.getHeureDebut(), reprise.getHeureFin(), 
-					reprise.getIdMR(), reprise.getLieu()));
+					reprise.getIdMR(), reprise.getLieu(), reprise.getMonitrices()));
 		}
 		return  nouvelleReprises;
 	}

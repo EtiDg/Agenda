@@ -15,9 +15,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class QueryManager {
-	private static String url = "jdbc:sqlite:database/agenda.db"; 
+	//private static String url = "jdbc:sqlite:database/agenda.db"; 
+	private static String url = "jdbc:sqlite:" + System.getenv("LOCALAPPDATA") + "/Agenda/database/agenda.db"; 
 	public static final String DRIVER = "org.sqlite.JDBC";
-
 	public static Connection getConnection() throws SQLException {
 		//Class.forName(DRIVER);
 		Connection conn = null;
@@ -357,13 +357,20 @@ public class QueryManager {
 		}else if(choix == 1){
 			supprimerReprisesDeMonitriceUnique(monitrice);
 		}else if(choix == 2){
-			supprimerRepriseMonitrice(monitrice);
+			supprimerRepriseMonitriceDeMonitrice(monitrice);
 		}else{
 			throw new Exception("choix non valide");
 		}
+		//on supprime maintenant la monitrice
+		try(Connection conn = getConnection();
+				PreparedStatement ps = QueryBuilder.suppressionMonitrice(conn);
+				){   
+			ps.setLong(1, monitrice.getId());
+			ps.executeUpdate();
+		}
 	}
 
-	public static void supprimerReprisesDeMonitrice(Monitrice monitrice) throws SQLException, Exception{
+	public static void supprimerReprisesDeMonitrice(Monitrice monitrice) throws SQLException{
 		// Les relations RepriseMonitrice associées sont détruites en cascade
 		try(Connection conn = getConnection();
 				PreparedStatement ps = QueryBuilder.supprimerReprisesDeMonitrice(conn);
@@ -374,7 +381,7 @@ public class QueryManager {
 	}
 
 
-	public static void supprimerReprisesDeMonitriceUnique(Monitrice monitrice) throws SQLException, Exception{
+	public static void supprimerReprisesDeMonitriceUnique(Monitrice monitrice) throws SQLException{
 		// Les relations RepriseMonitrice sont détruites en cascade
 		try(Connection conn = getConnection();
 				PreparedStatement ps = QueryBuilder.supprimerReprisesDeMonitriceUnique(conn);
@@ -384,11 +391,20 @@ public class QueryManager {
 		}
 	}
 
-	public static void supprimerRepriseMonitrice(Monitrice monitrice) throws SQLException, Exception{
+	public static void supprimerRepriseMonitriceDeMonitrice(Monitrice monitrice) throws SQLException{
 		try(Connection conn = getConnection();
-				PreparedStatement ps = QueryBuilder.supprimerRepriseMonitrice(conn);
+				PreparedStatement ps = QueryBuilder.supprimerRepriseMonitriceDeMonitrice(conn);
 				){   
 			ps.setLong(1, monitrice.getId());
+			ps.executeUpdate();
+		}
+	}
+	
+	public static void supprimerRepriseMonitriceDeReprise(Reprise reprise) throws SQLException{
+		try(Connection conn = getConnection();
+				PreparedStatement ps = QueryBuilder.supprimerRepriseMonitriceDeReprise(conn);
+				){   
+			ps.setLong(1, reprise.getId());
 			ps.executeUpdate();
 		}
 	}
@@ -437,6 +453,10 @@ public class QueryManager {
 			ps.setLong(6,reprise.getId());
 			ps.executeUpdate();
 		}
+		//on met aussi à jour les monitrices
+		supprimerRepriseMonitriceDeReprise(reprise);
+		ajoutMonitricesAReprise(reprise.getId(), reprise.getMonitrices());	
+
 	}
 
 	public static void modificationGroupe(Groupe groupe, String ancienNom) throws SQLException{
@@ -624,13 +644,6 @@ public class QueryManager {
 		return creneaux;
 	}
 
-	public static JoursSpeciaux selectJoursSpeciaux() throws SQLException{
-		TreveHivernale treveHivernale = selectTreveHivernale();
-		ArrayList<Vacances> vacances = selectListeVacances();
-		ArrayList<JourFerie> joursFeries = selectListeJoursFeries();
-		return new JoursSpeciaux(treveHivernale, vacances, joursFeries);
-	}
-
 	public static ArrayList<Vacances> selectListeVacances() throws SQLException{
 		ArrayList<Vacances> vacances = new ArrayList<Vacances>();
 		String nom;
@@ -741,39 +754,42 @@ public class QueryManager {
 	//*******************************************************************************
 	//Requetes de test
 	//*******************************************************************************
-	public static void testCreneauMonitrice(long idMonitrice, Date date, int heureDebut, int heureFin) throws SQLException{
+	public static boolean testCreneauMonitrice(long idMonitrice, Date date, int heureDebut, int heureFin) throws SQLException{
 		try(Connection conn = getConnection();
 				PreparedStatement ps = QueryBuilder.testCreneauMonitrice(conn);
 				){
 			ps.setLong(1,idMonitrice);
 			ps.setDate(2,date);
-			ps.setInt(3,heureDebut);
-			ps.setInt(4, heureFin);
+			ps.setInt(3,heureFin);
+			ps.setInt(4, heureDebut);
 			ResultSet rs = ps.executeQuery();
+			return rs.next();
 		}
 	}
 
-	public static void testConflitLieu(long idLieu, Date date, int heureDebut, int heureFin) throws SQLException{
+	public static boolean testConflitLieu(long idLieu, Date date, int heureDebut, int heureFin) throws SQLException{
 		try(Connection conn = getConnection();
 				PreparedStatement ps = QueryBuilder.testConflitLieu(conn);
 				){
 			ps.setLong(1,idLieu);
 			ps.setDate(2,date);
-			ps.setInt(3,heureDebut);
-			ps.setInt(4, heureFin);
+			ps.setInt(3,heureFin);
+			ps.setInt(4, heureDebut);
 			ResultSet rs = ps.executeQuery();
+			return rs.next();
 		}
 	}
 
-	public static void testConflitMonitrice(long idMonitrice, Date date, int heureDebut, int heureFin) throws SQLException{
+	public static boolean testConflitMonitrice(long idMonitrice, Date date, int heureDebut, int heureFin) throws SQLException{
 		try(Connection conn = getConnection();
 				PreparedStatement ps = QueryBuilder.testConflitMonitrice(conn);
 				){
 			ps.setLong(1,idMonitrice);
 			ps.setDate(2,date);
-			ps.setInt(3,heureDebut);
-			ps.setInt(4, heureFin);
+			ps.setInt(3,heureFin);
+			ps.setInt(4, heureDebut);
 			ResultSet rs = ps.executeQuery();
+			return rs.next();
 		}
 	}	
 

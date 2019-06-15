@@ -12,9 +12,9 @@ public class MainProcess {
 	static boolean isDelete = true;
 
 	public static void main(String[] args) {
-		//createNewDatabase();
+		createNewDatabase();
 		//QueryManager.connect();
-		//QueryManager.createTables();
+		QueryManager.createTables();
 //		try {
 //			QueryManager.ajoutLieu(new Lieu(0,"salut"));
 //		} catch (SQLException e) {
@@ -25,10 +25,11 @@ public class MainProcess {
 
 	public static void createNewDatabase() {
 
-		String url = "jdbc:sqlite:database/agenda.db";
-
+		//String url = "jdbc:sqlite:database/agenda.db";
+		String url = "jdbc:sqlite:" + System.getenv("LOCALAPPDATA") + "/Agenda/database/agenda.db";
+		
 		if (isDelete){
-			File file = new File("database/agenda.db");
+			File file = new File(System.getenv("LOCALAPPDATA") + "/Agenda/database/agenda.db");
 			file.delete();	
 		}
 		try (Connection conn = DriverManager.getConnection(url)) {

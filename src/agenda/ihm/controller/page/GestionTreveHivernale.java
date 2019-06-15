@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 import agenda.MainApp;
+import agenda.process.object.JoursSpeciaux;
 import agenda.process.object.TreveHivernale;
 import agenda.process.sql.QueryManager;
 import javafx.event.ActionEvent;
@@ -68,6 +69,7 @@ public class GestionTreveHivernale extends AnchorPane{
 			;
 		}
 		treveHivernaleT.setText(treveHivernale.toString());
+		JoursSpeciaux.load();
 	}
 	
 	private Dialog<Boolean> initDialog(){

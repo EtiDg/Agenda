@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import agenda.ihm.controller.widget.Liste?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
@@ -47,6 +48,10 @@
 					GridPane.rowIndex="2" />
 				<Text strokeType="OUTSIDE" strokeWidth="0.0" text="Heure de fin:"
 					GridPane.rowIndex="3" />
+				<Text strokeType="OUTSIDE" strokeWidth="0.0" text="Monitrices:"
+					GridPane.rowIndex="4" />
+				<Text strokeType="OUTSIDE" strokeWidth="0.0" text="Lieu"
+					GridPane.rowIndex="5" />
 				<TextField fx:id="nomTF" GridPane.columnIndex="1" />
 				<DatePicker fx:id="dateDP" GridPane.columnIndex="1"
 					GridPane.rowIndex="1" />
@@ -54,9 +59,13 @@
 					GridPane.rowIndex="2" />
 				<TextField fx:id="heureFinTF" GridPane.columnIndex="1"
 					GridPane.rowIndex="3" />
+				<Liste fx:id="listeMonitrices" isMultiple="true" GridPane.columnIndex="1"
+					GridPane.rowIndex="4" />
+		      	<ComboBox fx:id="lieuCB" GridPane.columnIndex="1"
+		      		GridPane.rowIndex="5" />
 				<Button onAction="#handleValider" mnemonicParsing="false"
 					text="Valider les modifications" GridPane.columnIndex="1"
-					GridPane.rowIndex="4" />
+					GridPane.rowIndex="6" />
 			</children>
 		</GridPane>
 	</children>

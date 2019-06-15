@@ -47,5 +47,9 @@ public class Monitrice {
 		}
 		return creneaux;
 	}
+	
+	public String toString(){
+		return nom;
+	}
 
 }

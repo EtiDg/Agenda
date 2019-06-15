@@ -10,16 +10,20 @@ public class DateManagement extends AnchorPane {
 	String type;
 	CalendarYear calendarYear;
 	boolean isMultiple;
-	ArrayList<LocalDate> selectedDates;
+	boolean isTreveHivernale;
+	boolean isVacances;
+	ArrayList<LocalDate> selectedDates = new ArrayList<LocalDate>();
 	
-	public DateManagement(boolean isMultiple){
+	public DateManagement(boolean isMultiple, boolean isTreveHivernale, boolean isVacances){
 		this.isMultiple = isMultiple;
+		this.isTreveHivernale = isTreveHivernale;
+		this.isVacances = isVacances;
 	}
 	
 	public void displayYear(int annee){
 		getChildren().clear();
-		type = "week";
-		calendarYear = new CalendarYear(annee, isMultiple);
+		type = "year";
+		calendarYear = new CalendarYear(annee, isMultiple, isTreveHivernale, isVacances);
 		AnchorPane.setTopAnchor(calendarYear, 5.0);
 		AnchorPane.setLeftAnchor(calendarYear, 5.0);
 		AnchorPane.setRightAnchor(calendarYear, 5.0);

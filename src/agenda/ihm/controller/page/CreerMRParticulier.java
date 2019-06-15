@@ -10,10 +10,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.converter.LocalTimeStringConverter;
@@ -28,9 +29,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import agenda.CalendarMaps;
 import agenda.MainApp;
+import agenda.ihm.controller.widget.Liste;
 import agenda.ihm.event.NouvellePageEvent;
 import agenda.ihm.event.ValiderModeleEvent;
 import agenda.process.object.*;
@@ -38,22 +41,23 @@ import agenda.process.object.*;
 public class CreerMRParticulier extends AnchorPane {
 	
 	//TODO:
-	// ajout des Monitrices
-	// ajout Lieu
-	// ajout option vacances / TrèveHivernale
-	// validation des reprises (avec calendrier)
 	// ajout annuler
 	// interdire la création d'un modele sans reprise
 	
-    private ModeleDeReprise modeleDeReprise;
-    private CalendrierValidationModele calendrierValidationModele;
-	@FXML private SplitPane splitPane;
-	@FXML private TextField nomTF;
-	@FXML private DatePicker dateDebutDP;
-	@FXML private DatePicker dateFinDP;
-	@FXML private ComboBox<String> jourCB;
-	@FXML private TextField heureDebutTF;
-	@FXML private TextField heureFinTF;
+    protected ModeleDeReprise modeleDeReprise;
+    protected CalendrierValidationModele calendrierValidationModele;
+	@FXML protected TextField nomTF;
+	@FXML protected DatePicker dateDebutDP;
+	@FXML protected DatePicker dateFinDP;
+	@FXML protected ComboBox<String> jourCB;
+	@FXML protected TextField heureDebutTF;
+	@FXML protected TextField heureFinTF;
+	@FXML protected CheckBox isTreveHivernale;
+	@FXML protected CheckBox isVacances;
+	@FXML protected Liste<Monitrice> listeMonitrices;
+	@FXML protected ComboBox<String> lieuCB;
+	protected Map<String,Lieu> lieux = new HashMap<String,Lieu>();
+	protected EventHandler<ValiderModeleEvent> eventHandler;
 
 	public CreerMRParticulier(){
 		//import du fxml
@@ -73,67 +77,28 @@ public class CreerMRParticulier extends AnchorPane {
 		// ajout de la liste de jours dans la selection
 		jourCB.setItems(CalendarMaps.JOURS);
 		
+		//import des lieux
+		loadLieux();
+		
+		//import des monitrices
+		loadMonitrices();
+		
 		
 		// validation du modele de reprise
-		addEventHandler(ValiderModeleEvent.VALIDER_MODELE,
-                new EventHandler<ValiderModeleEvent>() {
-					@Override
-					public void handle(ValiderModeleEvent event) {
-						// ajout du modele de reprise
-						try {
-							QueryManager.ajoutModeleDeReprise(modeleDeReprise);
-						} catch (SQLException e) {
-							System.out.println("erreur durant l'ajout du modèle de reprise");
-							e.printStackTrace();
-							System.exit(0);
-						}
-						
-						// ajout des reprises
-						try {
-							QueryManager.ajoutReprises(calendrierValidationModele.getReprises());
-						} catch (SQLException e) {
-							System.out.println("erreur durant la création des reprises");
-							e.printStackTrace();
-							System.exit(0);
-						}
-						
-						//affichage des modèles de reprises particuliers
-						fireEvent(new NouvellePageEvent(new GestionParticuliers()));
-					}
-				}
-		);
+		eventHandler = new EventHandler<ValiderModeleEvent>() {
+			@Override
+			public void handle(ValiderModeleEvent event) {
+				ArrayList<Reprise> reprises = calendrierValidationModele.getReprises();
+				validerModele(reprises);
+			}
+		};
+		addEventHandler(ValiderModeleEvent.VALIDER_MODELE, eventHandler);
 	}
 	
 	public void handleGenerer(ActionEvent e){
-		boolean formulaireOk = true;
-		LocalDate dateDebut = null;
-		LocalDate dateFin = null; 
-		// vérification des champs de formulaire et import des dates
-		if(dateDebutDP.getValue()!=null && dateFinDP.getValue()!=null && jourCB.getValue()!=null && !nomTF.getText().isEmpty()){
-			dateDebut = dateDebutDP.getValue();
-			dateFin = dateFinDP.getValue();
-		}else{
-			formulaireOk = false;
-			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setTitle("Attention !");
-			alert.setHeaderText("Certains champs n'ont pas été remplis");
-			alert.showAndWait();
-		}
-		if (dateDebut.isAfter(dateFin) ){
-			formulaireOk = false;
-			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setTitle("Attention !");
-			alert.setHeaderText("Le jour de fin doit être supérieur au jour de début");
-			alert.showAndWait();
-		}
-		if (CalendarMaps.JOURS_SEMAINE.get(jourCB.getValue()) == null){
-			formulaireOk = false;
-			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setTitle("Attention !");
-			alert.setHeaderText("Ce jour de la semaine n'existe pas");
-			alert.showAndWait();
-		}
-		
+		boolean formulaireOk = verifierFormulaire();
+		LocalDate dateDebut = dateDebutDP.getValue();
+		LocalDate dateFin = dateFinDP.getValue();
 		
 		// import et conversion des heures
 		String heureDebutString = heureDebutTF.getText();
@@ -149,37 +114,199 @@ public class CreerMRParticulier extends AnchorPane {
 			alert.setHeaderText("L'heure de début doit être supérieure à celle de fin");
 			alert.showAndWait();
 		}
+
 		// creation du modele de reprise et de ses reprises.
 		if (formulaireOk){
-			modeleDeReprise = new ModeleDeReprise(nomTF.getText());
-
-			// calcul des reprises
-			DayOfWeek jour = CalendarMaps.JOURS_SEMAINE.get(jourCB.getValue());
-			DayOfWeek jourDebut = dateDebut.getDayOfWeek();
-			dateDebut = dateDebut.plusDays(( (jour.getValue()-jourDebut.getValue())%7 + 7)%7);
-			ArrayList<Reprise> reprises = new ArrayList<Reprise>();
-			while (dateDebut.compareTo(dateFin) <= 0){
-				reprises.add(new Reprise(modeleDeReprise.getNom(), dateDebut, heureDebut, heureFin, modeleDeReprise.getId(), new Lieu(0,"salut")));
-				dateDebut = dateDebut.plusDays(7);
-			}
-			
-			// affichage des reprises calculées
-			splitPane.getItems().clear();
-			calendrierValidationModele = new CalendrierValidationModele(reprises);
-	        AnchorPane.setBottomAnchor(calendrierValidationModele , 5.0);
-	        AnchorPane.setTopAnchor(calendrierValidationModele , 5.0);
-	        AnchorPane.setRightAnchor(calendrierValidationModele , 5.0);
-	        AnchorPane.setLeftAnchor(calendrierValidationModele , 5.0);
-	        splitPane.getItems().addAll(calendrierValidationModele );
+			genererReprises(dateDebut, dateFin, heureDebut, heureFin);
 		}
 		
+	}
+	
+	private void loadLieux(){
+		try {
+			ArrayList<Lieu> listeLieux = QueryManager.selectListeLieu();
+			ObservableList<String> nomLieux = FXCollections.observableArrayList(); 
+			for(int i =0; i<listeLieux.size();i++){
+				lieux.put(listeLieux.get(i).getNom(), listeLieux.get(i));
+				nomLieux.addAll(listeLieux.get(i).getNom());
+			}
+			lieuCB.setItems(nomLieux);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("erreur lors du chargement des lieux");
+			System.exit(0);
+		}
+		
+	}
+	
+	private void loadMonitrices(){
+		try {
+			listeMonitrices.loadListe(QueryManager.selectListeMonitrice());
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("erreur lors du chargement des monitrices");
+			System.exit(0);
+		}
 	}
 	
 	public void annuler(){
 		
 	}
 	
-	public void afficherCalendrier(){
-		
+	private boolean verifierFormulaire(){
+		boolean formulaireOk = true;
+		LocalDate dateDebut = null;
+		LocalDate dateFin = null; 
+		// vérification des champs de formulaire et import des dates
+		if(dateDebutDP.getValue()!=null && dateFinDP.getValue()!=null && jourCB.getValue()!=null && !nomTF.getText().isEmpty() && lieuCB.getValue()!=null){
+			dateDebut = dateDebutDP.getValue();
+			dateFin = dateFinDP.getValue();
+		}else{
+			formulaireOk = false;
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Attention !");
+			alert.setHeaderText("Certains champs n'ont pas été remplis");
+			alert.showAndWait();
+		}
+		if (formulaireOk && dateDebut.isAfter(dateFin) ){
+			formulaireOk = false;
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Attention !");
+			alert.setHeaderText("Le jour de fin doit être supérieur au jour de début");
+			alert.showAndWait();
+		}
+		if (CalendarMaps.JOURS_SEMAINE.get(jourCB.getValue()) == null){
+			formulaireOk = false;
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Attention !");
+			alert.setHeaderText("Ce jour de la semaine n'existe pas");
+			alert.showAndWait();
+		}
+		return formulaireOk;
 	}
+	
+	private void genererReprises(LocalDate dateDebut, LocalDate dateFin, int heureDebut, int heureFin){
+		modeleDeReprise = new ModeleDeReprise(nomTF.getText());
+
+		// calcul des reprises
+		DayOfWeek jour = CalendarMaps.JOURS_SEMAINE.get(jourCB.getValue());
+		DayOfWeek jourDebut = dateDebut.getDayOfWeek();
+		dateDebut = dateDebut.plusDays(( (jour.getValue()-jourDebut.getValue())%7 + 7)%7);
+		ArrayList<Reprise> reprises = new ArrayList<Reprise>();
+		while (dateDebut.compareTo(dateFin) <= 0 ){
+			// on verifie si la reprise ne tombe pas pendant les vacances ou la treve hivernale
+			if ( !( (isTreveHivernale.selectedProperty().get() && JoursSpeciaux.isTreveHivernale(dateDebut)) || 
+					(isVacances.selectedProperty().get() && JoursSpeciaux.isVacances(dateDebut)) ||
+					JoursSpeciaux.isFerie(dateDebut) ) ){
+				reprises.add(new Reprise(modeleDeReprise.getNom(), dateDebut, heureDebut, heureFin, modeleDeReprise.getId(), lieux.get(lieuCB.getValue()), listeMonitrices.getSelectedItems()  ));
+			}
+			dateDebut = dateDebut.plusDays(7);
+		}
+		
+		// affichage des reprises calculées
+		getChildren().clear();
+		calendrierValidationModele = new CalendrierValidationModele(reprises, isTreveHivernale.selectedProperty().get(), true);
+        AnchorPane.setBottomAnchor(calendrierValidationModele , 5.0);
+        AnchorPane.setTopAnchor(calendrierValidationModele , 5.0);
+        AnchorPane.setRightAnchor(calendrierValidationModele , 5.0);
+        AnchorPane.setLeftAnchor(calendrierValidationModele , 5.0);
+        getChildren().addAll(calendrierValidationModele );
+	}
+	
+	private void validerModele(ArrayList<Reprise> reprises){
+		
+		boolean validation = verifierJoursSpeciaux(reprises);
+
+		if (validation){
+			boolean testConflitLieu = testConflitLieu(reprises);
+			boolean testConflitMonitrice = testConflitMonitrice(reprises);
+
+			if (!testConflitLieu && !testConflitMonitrice){
+				// ajout du modele de reprise
+				try {
+					QueryManager.ajoutModeleDeReprise(modeleDeReprise);
+				} catch (SQLException e) {
+					System.out.println("erreur durant l'ajout du modèle de reprise");
+					e.printStackTrace();
+					System.exit(0);
+				}
+				
+				// ajout des reprises
+				try {
+					QueryManager.ajoutReprises(reprises);
+				} catch (SQLException e) {
+					System.out.println("erreur durant la création des reprises");
+					e.printStackTrace();
+					System.exit(0);
+				}
+				
+				//affichage des modèles de reprises particuliers
+				fireEvent(new NouvellePageEvent(new GestionParticuliers()));
+			}
+		}
+	}
+	
+	private boolean verifierJoursSpeciaux(ArrayList<Reprise> reprises){
+		if (isTreveHivernale.selectedProperty().get()  || isVacances.selectedProperty().get()){
+			for (int i=0; i<reprises.size();i++){
+				if ( (isTreveHivernale.selectedProperty().get() && JoursSpeciaux.isTreveHivernale(reprises.get(i).getDate())) || 
+						isVacances.selectedProperty().get() && JoursSpeciaux.isVacances(reprises.get(i).getDate())){
+					Alert alert = new Alert(AlertType.CONFIRMATION);
+					alert.setTitle("Confirmation de la validation");
+					alert.setHeaderText("Attention, certaines des reprises créées se situent pendant la trève hivernale ou pendant les vacances");
+
+					Optional<ButtonType> result = alert.showAndWait();
+					if (result.get() != ButtonType.OK){
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	private boolean testConflitLieu(ArrayList<Reprise> reprises){
+		boolean testConflitLieu = false;
+		for (int i=0; i<reprises.size();i++){
+			try{
+				testConflitLieu = QueryManager.testConflitLieu(reprises.get(i).getLieu().getId(), reprises.get(i).getSQLDate(), reprises.get(i).getHeureDebut(), reprises.get(i).getHeureFin());
+			} catch (SQLException e) {
+				System.out.println("erreur durant le test des lieux");
+				e.printStackTrace();
+				System.exit(0);
+			}
+			if (testConflitLieu){
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setTitle("Attention !");
+				alert.setHeaderText("Le lieu est déjà occupé pour certaines reprises");
+				alert.showAndWait();
+				break;
+			}
+		}
+		return testConflitLieu;
+	}
+		
+	private boolean testConflitMonitrice(ArrayList<Reprise> reprises){
+		boolean testConflitMonitrice = false;
+		for (int i=0; i<reprises.size() && !testConflitMonitrice;i++){
+			for(int j=0; j < reprises.get(i).getMonitrices().size();j++){
+				try{
+					testConflitMonitrice = QueryManager.testConflitMonitrice(reprises.get(i).getMonitrices().get(j).getId(), reprises.get(i).getSQLDate(), reprises.get(i).getHeureDebut(), reprises.get(i).getHeureFin());
+				} catch (SQLException e) {
+					System.out.println("erreur durant le test des monitrices");
+					e.printStackTrace();
+					System.exit(0);
+				}
+				if (testConflitMonitrice){
+					Alert alert = new Alert(AlertType.INFORMATION);
+					alert.setTitle("Attention !");
+					alert.setHeaderText("La ou les monitrices sont déjà affectées à une  reprise");
+					alert.showAndWait();
+					break;
+				}
+			}
+		}
+		return testConflitMonitrice;
+	}
+	
 }

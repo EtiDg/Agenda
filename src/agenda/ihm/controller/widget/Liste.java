@@ -41,11 +41,26 @@ public class Liste<T> extends AnchorPane{
 	
 	public void loadListe(ArrayList<T> liste){
 		listView.getItems().clear();
-		//this.list.addAll(list);
-		//listView.setItems(this.list);
 	    ObservableList<T> observableList = FXCollections.observableArrayList();
 	    observableList.addAll(liste);
 		listView.setItems(observableList);
+	}
+	
+//	public void selectItems(ArrayList<T> objects){
+//		for (int i=0; i<objects.size();i++){
+//			System.out.println(objects.get(i));
+//			for (int j=0; j<listView.getItems().size();j++){
+//				System.out.println(listView.getItems().get(j));
+//				if (objects.get(i).equals(listView.getItems().get(j))){
+//					System.out.println("equal");
+//					listView.getSelectionModel().select(listView.getItems().get(j));
+//				}
+//			}
+//		}
+//	}
+	
+	public void selectItem(T object){
+		listView.getSelectionModel().select(object);
 	}
 	
 	public ArrayList<T> getListe(){

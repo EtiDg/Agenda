@@ -1,8 +1,6 @@
 package agenda.ihm.controller.widget;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,21 +9,28 @@ import agenda.CalendarMaps;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 
 public class CalendarYear extends CellCollection<YearCell>{
 	
 	int year;
+	boolean isTreveHivernale;
+	boolean isVacances;
 	protected GridPane calendrier;
 	public Map<LocalDate, Integer> cellMap = new HashMap<LocalDate, Integer>();
 
-	public CalendarYear(int annee, boolean isMultiple){
+	public CalendarYear(int annee, boolean isMultiple, boolean isTreveHivernale, boolean isVacances){
 		super(isMultiple);
 		this.year = annee;
+		this.isTreveHivernale = isTreveHivernale;
+		this.isVacances = isVacances;
+		VBox vBox = new VBox();
 		calendrier = new GridPane();
-		AnchorPane.setTopAnchor(calendrier, 0.0);
-		AnchorPane.setLeftAnchor(calendrier, 0.0);
-		AnchorPane.setRightAnchor(calendrier, 0.0);
-		AnchorPane.setBottomAnchor(calendrier, 0.0);
+		AnchorPane.setTopAnchor(vBox, 0.0);
+		AnchorPane.setLeftAnchor(vBox, 0.0);
+		AnchorPane.setRightAnchor(vBox, 0.0);
+		AnchorPane.setBottomAnchor(vBox, 0.0);
+		vBox.getChildren().addAll(new Label(String.valueOf(year)), calendrier);
 
 		//ajoute des lignes pour délimiter les cellules
 		calendrier.getStyleClass().add("calendrier");
@@ -34,7 +39,7 @@ public class CalendarYear extends CellCollection<YearCell>{
 
 		buildCalendrier();
 
-		getChildren().addAll(calendrier);
+		getChildren().addAll(vBox);
 
 	}
 
@@ -47,7 +52,7 @@ public class CalendarYear extends CellCollection<YearCell>{
 			if(date.getDayOfMonth()==1){
 				calendrier.add(new Label(CalendarMaps.MOIS.get(date.getMonth())), date.getMonthValue(),0);
 			}
-			YearCell cell = new YearCell(c,date);
+			YearCell cell = new YearCell(c,date, isTreveHivernale, isVacances);
 			collection.add(cell);
 			calendrier.add(cell, date.getMonthValue(), date.getDayOfMonth());
 			cellMap.put(date, c);

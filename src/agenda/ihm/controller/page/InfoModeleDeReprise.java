@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import agenda.MainApp;
 import agenda.ihm.controller.widget.Liste;
 import agenda.ihm.event.NouvellePageEvent;
-import agenda.ihm.event.NouvelleRepriseEvent;
 import agenda.ihm.event.StringEvent;
 import agenda.process.object.*;
 import agenda.process.sql.QueryManager;
@@ -80,7 +79,7 @@ public class InfoModeleDeReprise extends AnchorPane {
 		if (e.getButton() == MouseButton.PRIMARY){
 			ArrayList<Reprise> reprises = listeReprises.getSelectedItems();
 			if (reprises.size() == 1){
-				fireEvent(new NouvellePageEvent(new InfoReprise(reprises.get(0), isGroupe)));
+				fireEvent(new NouvellePageEvent(new InfoReprise(modeleDeReprise, reprises.get(0), isGroupe)));
 			}else if (reprises.size() > 1){
 				//fireEvent(new NouvellePageEvent(new InfoMultiReprises(reprises)));
 			}
@@ -95,7 +94,7 @@ public class InfoModeleDeReprise extends AnchorPane {
 	}
 	
 	public void handleNouvelleReprise(MouseEvent e){
-		fireEvent(new NouvelleRepriseEvent());
+		fireEvent(new NouvellePageEvent(new CreerReprise(modeleDeReprise, isGroupe)));
 	}
 	
 	public void supprimerReprises(ArrayList<Reprise> reprises){

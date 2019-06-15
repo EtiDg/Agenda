@@ -39,9 +39,12 @@ public class QueryBuilder {
 			+ "VALUES (?,?);";
 	
 	// suppressions
-	private static String suppressionRepriseMonitrice = 
+	private static String suppressionRepriseMonitriceDeMonitrice = 
 			"DELETE FROM RepriseMonitrice \n"
 			+ "WHERE idMonitrice = ?;";
+	private static String suppressionRepriseMonitriceDeReprise = 
+			"DELETE FROM RepriseMonitrice \n"
+			+ "WHERE idReprise = ?;";
 	private static String suppressionReprise = 
 			"DELETE FROM Reprise \n"
 			+ "WHERE id = ?;";
@@ -127,18 +130,22 @@ public class QueryBuilder {
 	private static String selectListeLieu = 
 			"SELECT id, nom  FROM Lieu;"; 
 	private static String selectListeVacances =
-			"SELECT nom, dateDebut, dateFin FROM Vacances;";
+			"SELECT nom, dateDebut, dateFin FROM Vacances \n"
+			+ "ORDER BY dateDebut ASC;";
 	private static String selectCreneaux =
 			"SELECT id, date, heureDebut, heureFin FROM Creneau \n"
-			+ "WHERE idMonitrice = ?;";
+			+ "WHERE idMonitrice = ? \n"
+			+ "ORDER BY heureDebut ASC;";
 	private static String selectListeJoursFeries =
-			"SELECT date FROM JourFerie;";
+			"SELECT date FROM JourFerie  \n"
+			+ "ORDER BY date ASC;";
 	private static String selectTreveHivernale =
 			"SELECT  dateDebut, dateFin FROM TreveHivernale;";
 	private static String selectReprisesDeModele = 
 			"SELECT Reprise.id, Reprise.nom, Reprise.date, Reprise.heureDebut, Reprise.heureFin, Lieu.id, Lieu.nom FROM Reprise \n"
 			+ "JOIN Lieu ON Lieu.id = Reprise.idLieu \n"
-			+ "AND Reprise.idMR = ?;";
+			+ "AND Reprise.idMR = ? \n"
+			+ "ORDER  BY Reprise.date ASC;";
 	private static String selectReprisesDeSemaine = 
 			"SELECT Reprise.id, Reprise.nom, Reprise.date, Reprise.heureDebut, Reprise.heureFin, Reprise.idMR, Lieu.id, Lieu.nom  FROM Reprise \n"
 			+ "JOIN Lieu ON Lieu.id = Reprise.idLieu \n"
@@ -153,20 +160,20 @@ public class QueryBuilder {
 			+ "WHERE idMonitrice = ? \n"
 			+ "AND date = ? \n"
 			+ "AND heureDebut < ? \n"
-			+ "AND heureFin > ?;";
+			+ "AND heureFin > ? LIMIT 1;";
 	private static String testConflitLieu =
 			"SELECT id FROM Reprise \n"
 			+ "WHERE idLieu = ?"
 			+ "AND date = ? \n"
 			+ "AND heureDebut < ? \n"
-			+ "AND heureFin > ?;";
+			+ "AND heureFin > ? LIMIT 1;";
 	private static String testConflitMonitrice = 
 			"SELECT Reprise.id FROM Reprise \n"
-			+ "JOIN RepriseMonitrice ON Reprise.id = RepriseMonitrice.idMonitrice \n"
-			+ "WHERE Monitrice.idMonitrice = ? \n"
+			+ "JOIN RepriseMonitrice ON Reprise.id = RepriseMonitrice.idReprise \n"
+			+ "WHERE RepriseMonitrice.idMonitrice = ? \n"
 			+ "AND Reprise.date = ? \n"
 			+ "AND Reprise.heureDebut < ? \n"
-			+ "AND Reprise.heureFin > ?;";
+			+ "AND Reprise.heureFin > ? LIMIT 1;";
 
 	
 
@@ -219,8 +226,12 @@ public class QueryBuilder {
 // Requetes de suppression
 //*******************************************************************************
 	
-	public static PreparedStatement supprimerRepriseMonitrice(Connection conn) throws SQLException{
-		return conn.prepareStatement(suppressionRepriseMonitrice);
+	public static PreparedStatement supprimerRepriseMonitriceDeMonitrice(Connection conn) throws SQLException{
+		return conn.prepareStatement(suppressionRepriseMonitriceDeMonitrice);
+	}
+	
+	public static PreparedStatement supprimerRepriseMonitriceDeReprise(Connection conn) throws SQLException{
+		return conn.prepareStatement(suppressionRepriseMonitriceDeReprise);
 	}
 	
 	public static PreparedStatement suppressionReprise(Connection conn) throws SQLException{

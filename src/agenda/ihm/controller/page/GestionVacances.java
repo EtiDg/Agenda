@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import agenda.MainApp;
 import agenda.ihm.controller.widget.Liste;
+import agenda.process.object.JoursSpeciaux;
 import agenda.process.object.Vacances;
 import agenda.process.sql.QueryManager;
 import javafx.event.ActionEvent;
@@ -76,6 +77,7 @@ public class GestionVacances extends AnchorPane {
 			}
 			listeVacances.add(vacances);
 		}
+		JoursSpeciaux.load();
 	}
 	
 	public void handleModifier(ActionEvent e){
@@ -106,7 +108,7 @@ public class GestionVacances extends AnchorPane {
 //			}
 			
 			reloadVacances();
-			
+			JoursSpeciaux.load();
 		}
 		
 
@@ -129,6 +131,7 @@ public class GestionVacances extends AnchorPane {
 				listeVacances.remove(vacances);
 			}
 		});
+		JoursSpeciaux.load();
 	}
 	
 	private Dialog<Boolean> initDialog(){

@@ -14,6 +14,14 @@ public class TreveHivernale {
 		this.dateFin = dateFin;
 	}
 
+	public LocalDate getDateDebut() {
+		return dateDebut;
+	}
+
+	public LocalDate getDateFin() {
+		return dateFin;
+	}
+	
 	public Date getSQLDateDebut() {
 		return Date.valueOf(dateDebut);
 	}

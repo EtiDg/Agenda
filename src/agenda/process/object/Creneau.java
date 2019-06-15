@@ -28,6 +28,10 @@ public class Creneau {
 		this.heureFin = heureFin;
 	}
 	
+	public void setId(long id){
+		this.id = id;
+	}
+	
 	public long getId() {
 		return id;
 	}

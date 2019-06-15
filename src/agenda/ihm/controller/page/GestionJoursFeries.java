@@ -9,6 +9,7 @@ import java.util.Optional;
 import agenda.MainApp;
 import agenda.ihm.controller.widget.Liste;
 import agenda.process.object.JourFerie;
+import agenda.process.object.JoursSpeciaux;
 import agenda.process.sql.QueryManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -74,6 +75,7 @@ public class GestionJoursFeries extends AnchorPane {
 			}
 			listeJoursFeries.add(jourFerie);
 		}
+		JoursSpeciaux.load();
 	}
 	
 	public void handleModifier(ActionEvent e){
@@ -97,7 +99,7 @@ public class GestionJoursFeries extends AnchorPane {
 //			}
 			
 			reloadJoursFeries();
-			
+			JoursSpeciaux.load();
 		}
 		
 
@@ -120,6 +122,7 @@ public class GestionJoursFeries extends AnchorPane {
 				listeJoursFeries.remove(jourFerie);
 			}
 		});
+		JoursSpeciaux.load();
 	}
 	
 	private Dialog<LocalDate> initDialog(){
