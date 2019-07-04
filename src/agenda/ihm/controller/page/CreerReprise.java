@@ -47,6 +47,7 @@ public class CreerReprise extends AnchorPane {
 	@FXML private DatePicker dateDP;
 	@FXML private TextField heureDebutTF;
 	@FXML private TextField heureFinTF;
+	@FXML protected ListeCavaliers listeCavaliers;
 	@FXML protected Liste<Monitrice> listeMonitrices;
 	@FXML protected ComboBox<String> lieuCB;
 	protected Map<String,Lieu> lieux = new HashMap<String,Lieu>();
@@ -117,7 +118,7 @@ public class CreerReprise extends AnchorPane {
 		
 		// creation de la reprise.
 		if (formulaireOk){
-			Reprise reprise = new Reprise(nomTF.getText(), date, heureDebut, heureFin, modeleDeReprise.getId(),lieux.get(lieuCB.getValue()), listeMonitrices.getSelectedItems() );
+			Reprise reprise = new Reprise(nomTF.getText(), date, heureDebut, heureFin, modeleDeReprise.getId(),lieux.get(lieuCB.getValue()),listeCavaliers.getCavaliers() , listeMonitrices.getSelectedItems() );
 			
 			boolean testConflitLieu = testConflitLieu(reprise);
 			boolean testConflitMonitrice = testConflitMonitrice(reprise);
@@ -157,9 +158,9 @@ public class CreerReprise extends AnchorPane {
 		try {
 			ArrayList<Lieu> listeLieux = QueryManager.selectListeLieu();
 			ObservableList<String> nomLieux = FXCollections.observableArrayList(); 
-			for(int i =0; i<listeLieux.size();i++){
-				lieux.put(listeLieux.get(i).getNom(), listeLieux.get(i));
-				nomLieux.addAll(listeLieux.get(i).getNom());
+			for(Lieu lieu : listeLieux){
+				lieux.put(lieu.getNom(), lieu);
+				nomLieux.addAll(lieu.getNom());
 			}
 			lieuCB.setItems(nomLieux);
 		} catch (SQLException e) {
@@ -200,9 +201,9 @@ public class CreerReprise extends AnchorPane {
 	
 	private boolean testConflitMonitrice(Reprise reprise){
 		boolean testConflitMonitrice = false;
-		for(int i=0; i < reprise.getMonitrices().size();i++){
+		for(Monitrice monitrice : reprise.getMonitrices()){
 			try{
-				testConflitMonitrice = QueryManager.testConflitMonitrice(reprise.getMonitrices().get(i).getId(), reprise.getSQLDate(), reprise.getHeureDebut(), reprise.getHeureFin());
+				testConflitMonitrice = QueryManager.testConflitMonitrice(monitrice.getId(), reprise.getSQLDate(), reprise.getHeureDebut(), reprise.getHeureFin());
 			} catch (SQLException e2) {
 				System.out.println("erreur durant le test des monitrices");
 				e2.printStackTrace();

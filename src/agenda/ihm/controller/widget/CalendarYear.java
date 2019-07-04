@@ -70,8 +70,8 @@ public class CalendarYear extends CellCollection<YearCell>{
 	}
 	
 	public void selectDate(ArrayList<LocalDate> dates){
-		for (int i=0; i<dates.size();i++){
-			selectDate(dates.get(i));
+		for (LocalDate date : dates){
+			selectDate(date);
 		}
 	}
 

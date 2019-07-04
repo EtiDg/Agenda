@@ -36,3 +36,7 @@
 .jourFerie_background{
 	-fx-background-color: coral;
 }
+
+.repriceCell{
+	-fx-border-color: gray;
+}

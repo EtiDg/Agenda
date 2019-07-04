@@ -8,6 +8,7 @@ import agenda.ihm.event.NouvellePageEvent;
 import agenda.ihm.event.ValiderModeleEvent;
 import agenda.process.object.Groupe;
 import agenda.process.object.JoursSpeciaux;
+import agenda.process.object.Monitrice;
 import agenda.process.object.Reprise;
 import agenda.process.sql.QueryManager;
 import javafx.event.EventHandler;
@@ -15,32 +16,31 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
 
-public class CreerGroupe extends CreerMRParticulier{
-	    
+public class CreerGroupe extends CreerMRParticulier {
 
-	public CreerGroupe(){
+	public CreerGroupe() {
 		super();
 		removeEventHandler(ValiderModeleEvent.VALIDER_MODELE, eventHandler);
 		eventHandler = new EventHandler<ValiderModeleEvent>() {
-					@Override
-					public void handle(ValiderModeleEvent event) {
-						ArrayList<Reprise> reprises = calendrierValidationModele.getReprises();
-						validerModele(reprises);
-						
-					}
+			@Override
+			public void handle(ValiderModeleEvent event) {
+				ArrayList<Reprise> reprises = calendrierValidationModele.getReprises();
+				validerModele(reprises);
+
+			}
 		};
 		addEventHandler(ValiderModeleEvent.VALIDER_MODELE, eventHandler);
 	}
-	
-	private void validerModele(ArrayList<Reprise> reprises){
-		
+
+	private void validerModele(ArrayList<Reprise> reprises) {
+
 		boolean validation = verifierJoursSpeciaux(reprises);
 
-		if (validation){
+		if (validation) {
 			boolean testConflitLieu = testConflitLieu(reprises);
 			boolean testConflitMonitrice = testConflitMonitrice(reprises);
 
-			if (!testConflitLieu && !testConflitMonitrice){
+			if (!testConflitLieu && !testConflitMonitrice) {
 				// ajout du modele de reprise
 				try {
 					QueryManager.ajoutModeleDeReprise(modeleDeReprise);
@@ -49,8 +49,8 @@ public class CreerGroupe extends CreerMRParticulier{
 					e.printStackTrace();
 					System.exit(0);
 				}
-				
-				//ajout du groupe
+
+				// ajout du groupe
 				try {
 					QueryManager.ajoutGroupe(new Groupe(modeleDeReprise.getNom(), true, true, modeleDeReprise));
 				} catch (SQLException e) {
@@ -58,7 +58,7 @@ public class CreerGroupe extends CreerMRParticulier{
 					e.printStackTrace();
 					System.exit(0);
 				}
-				
+
 				// ajout des reprises
 				try {
 					QueryManager.ajoutReprises(reprises);
@@ -67,24 +67,25 @@ public class CreerGroupe extends CreerMRParticulier{
 					e.printStackTrace();
 					System.exit(0);
 				}
-				
-				//affichage des modèles de reprises particuliers
+
+				// affichage des modèles de reprises particuliers
 				fireEvent(new NouvellePageEvent(new GestionGroupes()));
 			}
 		}
 	}
-	
-	private boolean verifierJoursSpeciaux(ArrayList<Reprise> reprises){
-		if (isTreveHivernale.selectedProperty().get()  || isVacances.selectedProperty().get()){
-			for (int i=0; i<reprises.size();i++){
-				if ( (isTreveHivernale.selectedProperty().get() && JoursSpeciaux.isTreveHivernale(reprises.get(i).getDate())) || 
-						isVacances.selectedProperty().get() && JoursSpeciaux.isVacances(reprises.get(i).getDate())){
+
+	private boolean verifierJoursSpeciaux(ArrayList<Reprise> reprises) {
+		if (isTreveHivernale.selectedProperty().get() || isVacances.selectedProperty().get()) {
+			for (Reprise reprise : reprises) {
+				if ((isTreveHivernale.selectedProperty().get() && JoursSpeciaux.isTreveHivernale(reprise.getDate()))
+						|| isVacances.selectedProperty().get() && JoursSpeciaux.isVacances(reprise.getDate())) {
 					Alert alert = new Alert(AlertType.CONFIRMATION);
 					alert.setTitle("Confirmation de la validation");
-					alert.setHeaderText("Attention, certaines des reprises créées se situent pendant la trève hivernale ou pendant les vacances");
+					alert.setHeaderText(
+							"Attention, certaines des reprises créées se situent pendant la trève hivernale ou pendant les vacances");
 
 					Optional<ButtonType> result = alert.showAndWait();
-					if (result.get() != ButtonType.OK){
+					if (result.get() != ButtonType.OK) {
 						return false;
 					}
 				}
@@ -92,18 +93,19 @@ public class CreerGroupe extends CreerMRParticulier{
 		}
 		return true;
 	}
-	
-	private boolean testConflitLieu(ArrayList<Reprise> reprises){
+
+	private boolean testConflitLieu(ArrayList<Reprise> reprises) {
 		boolean testConflitLieu = false;
-		for (int i=0; i<reprises.size();i++){
-			try{
-				testConflitLieu = QueryManager.testConflitLieu(reprises.get(i).getLieu().getId(), reprises.get(i).getSQLDate(), reprises.get(i).getHeureDebut(), reprises.get(i).getHeureFin());
+		for (Reprise reprise : reprises) {
+			try {
+				testConflitLieu = QueryManager.testConflitLieu(reprise.getLieu().getId(), reprise.getSQLDate(),
+						reprise.getHeureDebut(), reprise.getHeureFin());
 			} catch (SQLException e) {
 				System.out.println("erreur durant le test des lieux");
 				e.printStackTrace();
 				System.exit(0);
 			}
-			if (testConflitLieu){
+			if (testConflitLieu) {
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.setTitle("Attention !");
 				alert.setHeaderText("Le lieu est déjà occupé pour certaines reprises");
@@ -113,19 +115,21 @@ public class CreerGroupe extends CreerMRParticulier{
 		}
 		return testConflitLieu;
 	}
-		
-	private boolean testConflitMonitrice(ArrayList<Reprise> reprises){
+
+	private boolean testConflitMonitrice(ArrayList<Reprise> reprises) {
 		boolean testConflitMonitrice = false;
-		for (int i=0; i<reprises.size() && !testConflitMonitrice;i++){
-			for(int j=0; j < reprises.get(i).getMonitrices().size();j++){
-				try{
-					testConflitMonitrice = QueryManager.testConflitMonitrice(reprises.get(i).getMonitrices().get(j).getId(), reprises.get(i).getSQLDate(), reprises.get(i).getHeureDebut(), reprises.get(i).getHeureFin());
+		for (int i = 0; i < reprises.size() && !testConflitMonitrice; i++) {
+			for (Monitrice monitrice : reprises.get(i).getMonitrices()) {
+				try {
+					testConflitMonitrice = QueryManager.testConflitMonitrice(
+							monitrice.getId(), reprises.get(i).getSQLDate(),
+							reprises.get(i).getHeureDebut(), reprises.get(i).getHeureFin());
 				} catch (SQLException e) {
 					System.out.println("erreur durant le test des monitrices");
 					e.printStackTrace();
 					System.exit(0);
 				}
-				if (testConflitMonitrice){
+				if (testConflitMonitrice) {
 					Alert alert = new Alert(AlertType.INFORMATION);
 					alert.setTitle("Attention !");
 					alert.setHeaderText("La ou les monitrices sont déjà affectées à une  reprise");

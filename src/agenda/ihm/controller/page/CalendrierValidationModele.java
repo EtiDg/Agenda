@@ -25,8 +25,9 @@ public class CalendrierValidationModele extends AnchorPane{
 	boolean isVacances;
 	@FXML BorderPane borderPane;
 	
-	public CalendrierValidationModele(ArrayList<Reprise> reprises, boolean isTreveHivernale, boolean isVacances){
-		FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("ihm/view/page/CalendrierValidationModele.fxml"));
+	public CalendrierValidationModele(ArrayList<Reprise> reprises, boolean isTreveHivernale, boolean isVacances) {
+		FXMLLoader fxmlLoader = new FXMLLoader(
+				MainApp.class.getResource("ihm/view/page/CalendrierValidationModele.fxml"));
 		fxmlLoader.setRoot(this);
 		fxmlLoader.setController(this);
 		try {
@@ -43,37 +44,35 @@ public class CalendrierValidationModele extends AnchorPane{
 		setSelected();
 		borderPane.setCenter(calendrier);
 	}
-		
-	public void setSelected(){
-		ArrayList<LocalDate> dates = new ArrayList<LocalDate>();  
-		for (int i=0; i<reprises.size(); i++){ 
-			dates.add(reprises.get(i).getDate());
+
+	public void setSelected() {
+		ArrayList<LocalDate> dates = new ArrayList<LocalDate>();
+		for (Reprise reprise : reprises) {
+			dates.add(reprise.getDate());
 		}
 		calendrier.selectDates(dates);
 	}
-	
-	public ArrayList<Reprise> getReprises(){
+
+	public ArrayList<Reprise> getReprises() {
 		ArrayList<LocalDate> selectedDates = calendrier.getSelectedDates();
 		ArrayList<Reprise> nouvelleReprises = new ArrayList<Reprise>();
 		Reprise reprise = reprises.get(0);
-		for (int i =0; i<selectedDates.size(); i++){
-			nouvelleReprises.add(new Reprise(reprise.getNom(), selectedDates.get(i), 
-					reprise.getHeureDebut(), reprise.getHeureFin(), 
-					reprise.getIdMR(), reprise.getLieu(), reprise.getMonitrices()));
+		for (LocalDate date : selectedDates) {
+			nouvelleReprises.add(new Reprise(reprise.getNom(), date, reprise.getHeureDebut(),
+					reprise.getHeureFin(), reprise.getIdMR(), reprise.getLieu(), reprise.getCavaliers(), reprise.getMonitrices()));
 		}
-		return  nouvelleReprises;
+		return nouvelleReprises;
 	}
-	
 
-	public void handleValider(ActionEvent e){
+	public void handleValider(ActionEvent e) {
 		fireEvent(new ValiderModeleEvent());
 	}
-	
-	public void handleAnneeSuivante(ActionEvent e){
+
+	public void handleAnneeSuivante(ActionEvent e) {
 		calendrier.addYear();
 	}
-	
-	public void handleAnnePrecedente(ActionEvent e){
+
+	public void handleAnnePrecedente(ActionEvent e) {
 		calendrier.removeYear();
 	}
 }

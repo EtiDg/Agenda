@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import agenda.ihm.controller.widget.CalendarWeek?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+
+<fx:root type="AnchorPane" prefHeight="500.0" prefWidth="800.0"
+	xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
+	<children>
+		<VBox alignment="CENTER" spacing="20.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+			<children>
+				<HBox alignment="CENTER" spacing="20.0">
+					<children>
+						<DatePicker fx:id="dateDebutDP" />
+						<DatePicker fx:id="dateFinDP" />
+						<Button onAction="#handleGenererPlanningExcel" mnemonicParsing="false" text="générer le planning excel" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER" spacing="20.0">
+					<children>
+						<Button onAction="#handleRetirerMois" mnemonicParsing="false" text="mois précédent" />
+						<Button onAction="#handleRetirerSemaine" mnemonicParsing="false" text="semaine précédente" />
+						<Button onAction="#handleAjouterSemaine" mnemonicParsing="false" text="semaine suivante" />
+						<Button onAction="#handleAjouterMois" mnemonicParsing="false" text="mois suivant" />
+					</children>
+				</HBox>
+				<CalendarWeek fx:id="calendarWeek"/>
+
+			</children>
+		</VBox>
+	</children>
+</fx:root>

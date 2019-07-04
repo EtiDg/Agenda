@@ -14,19 +14,17 @@ import javafx.scene.layout.GridPane;
 
 public class CalendarCreneau extends CellCollection<CreneauCell>{
 	
-	public static int HEURE_DEBUT = 6; 
-	public static int HEURE_FIN = 21;
-	public static int DUREE_CRENEAU = 15;
-
+	public static final int HEURE_DEBUT = 6; 
+	public static final int HEURE_FIN = 21;
+	private static final int MINUTES[] = { 00, 15, 30, 45 };
+	
 	LocalDate date; // the first day of the week
-	long monitrice;
 	protected GridPane calendrier;
 	public Map<LocalDate, Map<Integer, Integer>> cellMap = new HashMap<LocalDate, Map<Integer, Integer>>();
 
-	public CalendarCreneau(LocalDate date, long monitrice, boolean isMultiple){
+	public CalendarCreneau(LocalDate date, boolean isMultiple){
 		super(isMultiple);
 		this.date = date;
-		this.monitrice = monitrice;
 		calendrier = new GridPane();
 		AnchorPane.setTopAnchor(calendrier, 0.0);
 		AnchorPane.setLeftAnchor(calendrier, 0.0);
@@ -52,12 +50,12 @@ public class CalendarCreneau extends CellCollection<CreneauCell>{
 			cellMap.put( date, new HashMap<Integer, Integer>() );
 			calendrier.add(new Label(CalendarMaps.JOURS.get(i)),i, 0);
 			int p=0;
-			for(int j=HEURE_DEBUT; j<=HEURE_FIN;j++){
-				for(int k=0; k<60/DUREE_CRENEAU;k++){
-					CreneauCell cell = new CreneauCell(c, new Creneau(0, monitrice, date,j*60+k*DUREE_CRENEAU, j*60+(k+1)*DUREE_CRENEAU));
+			for(int j=HEURE_DEBUT; j<HEURE_FIN;j++){
+				for(int k=0; k<4;k++){
+					CreneauCell cell = new CreneauCell(c, j, MINUTES[4]);
 					collection.add(cell);
 					calendrier.add(cell, c, p);
-					cellMap.get(date).put(j*60+k*DUREE_CRENEAU, c);
+					cellMap.get(date).put(j*60+k*15, c);
 					c = c+1;
 					p = p+1;
 				}

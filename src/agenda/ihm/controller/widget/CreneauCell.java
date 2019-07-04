@@ -12,13 +12,19 @@ import javafx.scene.layout.Priority;
 
 public class CreneauCell extends Cell{
 
-	protected Creneau creneau;
+	protected int heureDebut;
+	protected int minutesDebut;
 	protected HBox hBox = new HBox();
 	protected Label heureLabel = new Label();
 	
-	public CreneauCell(int id, Creneau creneau){
+	public CreneauCell(int id, int heureDebut, int minutesDebut){
 		super(id);
-		setCreneau(creneau);
+		
+		//affichage de l'heure
+		this.heureDebut = heureDebut;
+		this.minutesDebut = minutesDebut;
+		heureLabel.setText(heureDebut + "h" + minutesDebut);
+		
 		GridPane.setHgrow(this, Priority.ALWAYS);
 		GridPane.setVgrow(this, Priority.ALWAYS);
 		AnchorPane.setTopAnchor(hBox, 0.0);
@@ -35,13 +41,6 @@ public class CreneauCell extends Cell{
 
 	}
 	
-	private void setCreneau(Creneau creneau){
-		this.creneau = creneau;
-		int heure = creneau.getHeureDebut();
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm");
-		heureLabel.setText(LocalTime.of(heure%60, heure%60-heure).format(dtf));
-	}
-	
 	public void selectCell(){
 		getStyleClass().remove("white_background");
 		getStyleClass().add("blue_background");
@@ -51,8 +50,6 @@ public class CreneauCell extends Cell{
 		getStyleClass().remove("blue_background");
 		getStyleClass().add("white_background");
 	}
-	public Creneau getCreneau(){
-		return creneau;
-	}
+
 	
 }

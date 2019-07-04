@@ -10,6 +10,7 @@ import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import agenda.CalendarMaps;
 import agenda.process.sql.QueryManager;
 import javafx.util.converter.LocalTimeStringConverter;
 
@@ -23,22 +24,25 @@ public class Reprise {
 	private long idMR;
 	private Lieu lieu;
 	boolean isMonitricesUpdated = false;
+	private ArrayList<String> cavaliers;
 	private ArrayList<Monitrice> monitrices;
+	
 
 	
-	public Reprise(String nom, LocalDate date, int heureDebut, int heureFin, long idMR, Lieu lieu, ArrayList<Monitrice> monitrices){
+	public Reprise(String nom, LocalDate date, int heureDebut, int heureFin, long idMR, Lieu lieu, ArrayList<String> cavaliers, ArrayList<Monitrice> monitrices){
 		this.nom = nom;
 		this.date = date;
 		this.heureDebut = heureDebut;
 		this.heureFin = heureFin;
 		this.idMR= idMR;
 		this.lieu = lieu;
+		this.cavaliers = cavaliers;
 		this.monitrices = monitrices;
 		isMonitricesUpdated=true;
 		id = IdGenerator.getId();
 	}
 
-	public Reprise(long id, String nom, LocalDate date, int heureDebut, int heureFin, long idMR, Lieu lieu,  ArrayList<Monitrice> monitrices){
+	public Reprise(long id, String nom, LocalDate date, int heureDebut, int heureFin, long idMR, Lieu lieu, ArrayList<String> cavaliers, ArrayList<Monitrice> monitrices){
 		this.id = id;
 		this.nom = nom;
 		this.date = date;
@@ -46,11 +50,12 @@ public class Reprise {
 		this.heureFin = heureFin;
 		this.idMR= idMR;
 		this.lieu = lieu;
+		this.cavaliers = cavaliers;
 		this.monitrices = monitrices;
 		isMonitricesUpdated = true;
 	}
 	
-	public Reprise(long id, String nom, LocalDate date, int heureDebut, int heureFin, long idMR, Lieu lieu){
+	public Reprise(long id, String nom, LocalDate date, int heureDebut, int heureFin, long idMR, Lieu lieu, ArrayList<String> cavaliers){
 		this.id = id;
 		this.nom = nom;
 		this.date = date;
@@ -58,6 +63,7 @@ public class Reprise {
 		this.heureFin = heureFin;
 		this.idMR= idMR;
 		this.lieu = lieu;
+		this.cavaliers = cavaliers;
 		isMonitricesUpdated = false;
 	}
 	
@@ -112,20 +118,30 @@ public class Reprise {
 		return heureFin;
 	}
 	
+	public ArrayList<String> getCavaliers(){
+		return cavaliers;
+	}
+	
 	@Override
 	public String toString(){
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 		DateTimeFormatter formatterHeure = DateTimeFormatter.ofPattern("HH'h'mm");
 		return nom + ":    " 
+			+ CalendarMaps.JOURS.get(date.getDayOfWeek().getValue()-1) + " "
 			+ formatter.format(date) + "    " 
 			+ formatterHeure.format(LocalDateTime.of(0, 1, 1, (heureDebut-heureDebut%60)/60, heureDebut%60)) + "-" 
 			+ formatterHeure.format(LocalDateTime.of(0, 1, 1, (heureFin-heureFin%60)/60, heureFin%60))
-			+ " " + lieu.getNom();
-//		return nom + ":    " 
-//			+ formatter.format(date) + "    " 
-//			+ ((heureDebut-heureDebut%60)/60) + "h" + heureDebut%60 + "-" 
-//			+ ((heureFin-heureFin%60)/60) + "h" + heureFin%60
-//			+ " " + lieu.getNom();
+			+ " " + lieu.getNom() + " " + cavaliers.size() + " cav.";
+	}
+	
+	public String toString2(){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		DateTimeFormatter formatterHeure = DateTimeFormatter.ofPattern("HH'h'mm");
+		return nom + ":\n" 
+			+ CalendarMaps.JOURS.get(date.getDayOfWeek().getValue()-1) + " " + formatter.format(date) + "\n"
+			+ formatterHeure.format(LocalDateTime.of(0, 1, 1, (heureDebut-heureDebut%60)/60, heureDebut%60)) + "-" 
+			+ formatterHeure.format(LocalDateTime.of(0, 1, 1, (heureFin-heureFin%60)/60, heureFin%60))
+			+ "\n" + lieu.getNom() + " " + cavaliers.size() + " cavaliers";
 	}
 
 }

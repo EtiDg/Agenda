@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import agenda.ihm.controller.widget.Liste?>
+<?import agenda.ihm.controller.page.ListeCavaliers?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
@@ -51,7 +52,9 @@
 		      <CheckBox fx:id="isVacances" GridPane.columnIndex="1" GridPane.rowIndex="7" />
 		      <Liste fx:id="listeMonitrices" isMultiple="true" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
 		      <ComboBox fx:id="lieuCB" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-		      <Button onAction="#handleGenerer" mnemonicParsing="false" text="Générer les reprises" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+		      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Cavaliers:" GridPane.columnIndex="2" GridPane.rowIndex="8" />
+		      <ListeCavaliers fx:id="listeCavaliers" GridPane.columnIndex="3" GridPane.rowIndex="8"/>
+		      <Button onAction="#handleGenerer" mnemonicParsing="false" text="Générer les reprises" GridPane.columnIndex="1" GridPane.rowIndex="11" />
 		   </children>
       </GridPane>
    </children>

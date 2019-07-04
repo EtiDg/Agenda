@@ -117,6 +117,12 @@ public class QueryManager {
 				+ " FOREIGN KEY (idMonitrice) REFERENCES Monitrice(id) ON DELETE CASCADE,\n"
 				+ " FOREIGN KEY (idReprise) REFERENCES Reprise(id) ON DELETE CASCADE\n"
 				+ ");";
+		
+		String creationRepriseCavalier = "CREATE TABLE IF NOT EXISTS Cavalier (\n"
+				+ " idReprise integer,\n"
+				+ " nomCavalier text,\n"
+				+ " FOREIGN KEY (idReprise) REFERENCES Reprise(id) ON DELETE CASCADE\n"
+				+ ");";
 
 		try(Connection conn = getConnection();
 				Statement stmt = conn.createStatement();
@@ -132,6 +138,7 @@ public class QueryManager {
 			stmt.execute(creationVacances);
 			stmt.execute(creationTreveHivernale);
 			stmt.execute(creationRepriseMonitrice);
+			stmt.execute(creationRepriseCavalier);
 
 
 		}catch (SQLException e) {
@@ -159,14 +166,28 @@ public class QueryManager {
 	// Requetes d'ajout	
 	//*******************************************************************************	
 
-
+	
+	
+	public static void ajoutCavaliersAReprise(long idReprise, ArrayList<String> cavaliers) throws SQLException{
+		try(Connection conn = getConnection();
+				PreparedStatement ps = QueryBuilder.ajoutRepriseCavalier(conn);
+				){
+			for(String cavalier : cavaliers){
+				ps.setLong(1, idReprise);
+				ps.setString(2, cavalier); 
+				ps.addBatch();
+			}
+			ps.executeBatch();
+		}	
+	}
+	
 	public static void ajoutMonitricesAReprise(long idReprise, ArrayList<Monitrice> monitrices) throws SQLException{
 		try(Connection conn = getConnection();
 				PreparedStatement ps = QueryBuilder.ajoutRepriseMonitrice(conn);
 				){
-			for(int i = 0; i < monitrices.size(); i++){
+			for(Monitrice monitrice : monitrices){
 				ps.setLong(1, idReprise);
-				ps.setLong(2, monitrices.get(i).getId()); 
+				ps.setLong(2, monitrice.getId()); 
 				ps.addBatch();
 			}
 			ps.executeBatch();
@@ -177,8 +198,8 @@ public class QueryManager {
 		try(Connection conn = getConnection();
 				PreparedStatement ps = QueryBuilder.ajoutRepriseMonitrice(conn);
 				){
-			for(int i = 0; i < reprises.size(); i++){
-				ps.setLong(1, reprises.get(i).getId());
+			for(Reprise reprise : reprises){
+				ps.setLong(1, reprise.getId());
 				ps.setLong(2, idMonitrice);
 				ps.addBatch();
 			}	
@@ -191,25 +212,29 @@ public class QueryManager {
 		try(Connection conn = getConnection();
 				PreparedStatement ps = QueryBuilder.ajoutReprise(conn);
 				){
-			for(int i = 0; i < reprises.size(); i++){
-				ps.setLong(1,reprises.get(i).getId());
-				ps.setString(2,reprises.get(i).getNom());
-				ps.setInt(3,reprises.get(i).getHeureDebut());
-				ps.setInt(4,reprises.get(i).getHeureFin());
-				ps.setLong(5, reprises.get(i).getIdMR());
-				ps.setLong(6,reprises.get(i).getLieu().getId());
-				ps.setDate(7,reprises.get(i).getSQLDate());
+			for(Reprise reprise : reprises){
+				ps.setLong(1,reprise.getId());
+				ps.setString(2,reprise.getNom());
+				ps.setInt(3,reprise.getHeureDebut());
+				ps.setInt(4,reprise.getHeureFin());
+				ps.setLong(5, reprise.getIdMR());
+				ps.setLong(6,reprise.getLieu().getId());
+				ps.setDate(7,reprise.getSQLDate());
 				ps.addBatch();
 			}	
 			ps.executeBatch();
 		}
+		
+		//on ajoute les cavaliers
+		for(Reprise reprise : reprises){
+			ajoutCavaliersAReprise(reprise.getId(), reprise.getCavaliers());	
+		}
 
 		// on ajoute ensuite ses monitrices associées
-		for(int i = 0; i < reprises.size(); i++){
-			ajoutMonitricesAReprise(reprises.get(i).getId(), reprises.get(i).getMonitrices());	
+		for(Reprise reprise : reprises){
+			ajoutMonitricesAReprise(reprise.getId(), reprise.getMonitrices());	
 		}
 	}
-
 
 	public static void ajoutGroupe(Groupe groupe) throws SQLException{
 		try(Connection conn = getConnection();
@@ -257,12 +282,12 @@ public class QueryManager {
 		try(Connection conn = getConnection();
 				PreparedStatement ps = QueryBuilder.ajoutCreneau(conn);
 				){
-			for(int i = 0; i < creneaux.size(); i++){
-				ps.setLong(1,creneaux.get(i).getId());
-				ps.setInt(2,creneaux.get(i).getHeureDebut());
-				ps.setDate(3,creneaux.get(i).getSQLDate());
-				ps.setInt(4,creneaux.get(i).getHeureFin());
-				ps.setLong(5,creneaux.get(i).getIdMonitrice());
+			for(Creneau creneau : creneaux){
+				ps.setLong(1,creneau.getId());
+				ps.setInt(2,creneau.getHeureDebut());
+				ps.setDate(3,creneau.getSQLDate());
+				ps.setInt(4,creneau.getHeureFin());
+				ps.setLong(5,creneau.getIdMonitrice());
 				ps.addBatch();
 			}
 			ps.executeBatch();
@@ -304,11 +329,12 @@ public class QueryManager {
 	//*******************************************************************************
 
 	public static void suppressionReprises(ArrayList<Reprise> reprises) throws SQLException{
+		// Les reprises-monitrices et les cavaliers sont détruits en cascade
 		try(Connection conn = getConnection();
 				PreparedStatement ps = QueryBuilder.suppressionReprise(conn);
 				){
-			for(int i = 0; i < reprises.size(); i++){
-				ps.setLong(1,reprises.get(i).getId());
+			for(Reprise reprise : reprises){
+				ps.setLong(1,reprise.getId());
 				ps.executeQuery();
 				ps.addBatch();
 			}
@@ -373,18 +399,17 @@ public class QueryManager {
 	public static void supprimerReprisesDeMonitrice(Monitrice monitrice) throws SQLException{
 		// Les relations RepriseMonitrice associées sont détruites en cascade
 		try(Connection conn = getConnection();
-				PreparedStatement ps = QueryBuilder.supprimerReprisesDeMonitrice(conn);
+				PreparedStatement ps = QueryBuilder.suppressionReprisesDeMonitrice(conn);
 				){   
 			ps.setLong(1, monitrice.getId());
 			ps.executeUpdate();
 		}
 	}
 
-
 	public static void supprimerReprisesDeMonitriceUnique(Monitrice monitrice) throws SQLException{
 		// Les relations RepriseMonitrice sont détruites en cascade
 		try(Connection conn = getConnection();
-				PreparedStatement ps = QueryBuilder.supprimerReprisesDeMonitriceUnique(conn);
+				PreparedStatement ps = QueryBuilder.suppressionReprisesDeMonitriceUnique(conn);
 				){   
 			ps.setLong(1, monitrice.getId());
 			ps.executeUpdate();
@@ -393,16 +418,25 @@ public class QueryManager {
 
 	public static void supprimerRepriseMonitriceDeMonitrice(Monitrice monitrice) throws SQLException{
 		try(Connection conn = getConnection();
-				PreparedStatement ps = QueryBuilder.supprimerRepriseMonitriceDeMonitrice(conn);
+				PreparedStatement ps = QueryBuilder.suppressionRepriseMonitriceDeMonitrice(conn);
 				){   
 			ps.setLong(1, monitrice.getId());
 			ps.executeUpdate();
 		}
 	}
 	
+	public static void supprimerCavaliersDeReprise(Reprise reprise) throws SQLException{
+		try(Connection conn = getConnection();
+				PreparedStatement ps = QueryBuilder.suppressionCavaliersDeReprise(conn);
+				){   
+			ps.setLong(1, reprise.getId());
+			ps.executeUpdate();
+		}
+	}
+	
 	public static void supprimerRepriseMonitriceDeReprise(Reprise reprise) throws SQLException{
 		try(Connection conn = getConnection();
-				PreparedStatement ps = QueryBuilder.supprimerRepriseMonitriceDeReprise(conn);
+				PreparedStatement ps = QueryBuilder.suppressionRepriseMonitriceDeReprise(conn);
 				){   
 			ps.setLong(1, reprise.getId());
 			ps.executeUpdate();
@@ -453,6 +487,11 @@ public class QueryManager {
 			ps.setLong(6,reprise.getId());
 			ps.executeUpdate();
 		}
+		
+		// on met à jour les cavaliers
+		supprimerCavaliersDeReprise(reprise);
+		ajoutCavaliersAReprise(reprise.getId(), reprise.getCavaliers());
+		
 		//on met aussi à jour les monitrices
 		supprimerRepriseMonitriceDeReprise(reprise);
 		ajoutMonitricesAReprise(reprise.getId(), reprise.getMonitrices());	
@@ -587,6 +626,22 @@ public class QueryManager {
 		return monitrices;
 	}
 
+	public static ArrayList<String> selectCavaliersDeReprise(long idReprise) throws SQLException{
+		ArrayList<String> cavaliers = new ArrayList<String>();
+		String nom;
+		try(Connection conn = getConnection();
+				PreparedStatement ps = QueryBuilder.selectCavaliersDeReprise(conn);
+				){
+			ps.setLong(1, idReprise);
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()){
+				nom = rs.getString(1);
+				cavaliers.add(nom);
+			}
+		}
+		return cavaliers;
+	}
+	
 	public static ArrayList<Monitrice> selectMonitricesDeReprise(long idReprise) throws SQLException{
 		ArrayList<Monitrice> monitrices = new ArrayList<Monitrice>();
 		long id;
@@ -702,6 +757,7 @@ public class QueryManager {
 		int heureFin;
 		long idLieu;
 		String nomLieu;
+		ArrayList<String> cavaliers;
 		try(Connection conn = getConnection();
 				PreparedStatement ps = QueryBuilder.selectReprisesDeModele(conn);
 				){
@@ -715,13 +771,15 @@ public class QueryManager {
 				heureFin = rs.getInt(5);
 				idLieu = rs.getLong(6);
 				nomLieu = rs.getString(7);
-				reprises.add(new Reprise(idReprise, nomReprise, date.toLocalDate(), heureDebut, heureFin, idMR, new Lieu(idLieu, nomLieu)));
+				cavaliers = selectCavaliersDeReprise(idReprise);
+				reprises.add(new Reprise(idReprise, nomReprise, date.toLocalDate(), heureDebut, heureFin, idMR, new Lieu(idLieu, nomLieu), cavaliers));
 			}
 		}
+		
 		return reprises;
 	}
 
-	public static ArrayList<Reprise> selectReprisesDeSemaine(String annee, String semaine) throws SQLException{
+	public static ArrayList<Reprise> selectReprisesDeSemaine(int annee, int semaine) throws SQLException{
 		ArrayList<Reprise> reprises = new ArrayList<Reprise>();
 		long idReprise;
 		String nomReprise;
@@ -731,11 +789,18 @@ public class QueryManager {
 		long idMR;
 		long idLieu;
 		String nomLieu;
+		ArrayList<String> cavaliers;
 		try(Connection conn = getConnection();
 				PreparedStatement ps = QueryBuilder.selectReprisesDeSemaine(conn);
 				){
+			ps.setString(1, String.valueOf(annee));
+			ps.setString(2, String.valueOf(semaine));
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()){
+//				System.out.println(rs.getString(1));
+//				System.out.println(rs.getString(2));
+//				System.out.println(rs.getBoolean(3));
+//				System.out.println(rs.getDate(4));
 				idReprise = rs.getLong(1);
 				nomReprise = rs.getString(2);
 				date = rs.getDate(3);
@@ -744,7 +809,8 @@ public class QueryManager {
 				idMR = rs.getLong(6);
 				idLieu = rs.getLong(7);
 				nomLieu = rs.getString(8);
-				reprises.add(new Reprise(idReprise, nomReprise, date.toLocalDate(), heureDebut, heureFin, idMR, new Lieu(idLieu, nomLieu)));
+				cavaliers = selectCavaliersDeReprise(idReprise);
+				reprises.add(new Reprise(idReprise, nomReprise, date.toLocalDate(), heureDebut, heureFin, idMR, new Lieu(idLieu, nomLieu), cavaliers));
 			}
 		}
 		return reprises;
@@ -779,6 +845,21 @@ public class QueryManager {
 			return rs.next();
 		}
 	}
+	
+	public static boolean testConflitLieuAvecReprise(long idLieu, Date date, int heureDebut, int heureFin, long idReprise) throws SQLException{
+		try(Connection conn = getConnection();
+				PreparedStatement ps = QueryBuilder.testConflitLieuAvecReprise(conn);
+				){
+			ps.setLong(1,idLieu);
+			ps.setDate(2,date);
+			ps.setInt(3,heureFin);
+			ps.setInt(4, heureDebut);
+			ps.setLong(5, idReprise);
+			ResultSet rs = ps.executeQuery();
+			return rs.next();
+		}
+	}
+	
 
 	public static boolean testConflitMonitrice(long idMonitrice, Date date, int heureDebut, int heureFin) throws SQLException{
 		try(Connection conn = getConnection();
@@ -792,6 +873,20 @@ public class QueryManager {
 			return rs.next();
 		}
 	}	
+	
+	public static boolean testConflitMonitriceAvecReprise(long idMonitrice, Date date, int heureDebut, int heureFin, long idReprise) throws SQLException{
+		try(Connection conn = getConnection();
+				PreparedStatement ps = QueryBuilder.testConflitMonitriceAvecReprise(conn);
+				){
+			ps.setLong(1,idMonitrice);
+			ps.setDate(2,date);
+			ps.setInt(3,heureFin);
+			ps.setInt(4, heureDebut);
+			ps.setLong(5, idReprise);
+			ResultSet rs = ps.executeQuery();
+			return rs.next();
+		}
+	}
 
 
 }

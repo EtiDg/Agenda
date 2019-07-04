@@ -19,7 +19,7 @@
             <VBox alignment="CENTER" spacing="20.0">
                <children>
                   <Button onAction="#handleSupprimer" mnemonicParsing="false" text="Supprimer" />
-                  <Button onAction="#handleAjouter" mnemonicParsing="false" text="ajouter un jour ferie" />
+                  <Button onAction="#handleAjouter" mnemonicParsing="false" text="Ajouter un jour ferie" />
                </children>
                <padding>
                   <Insets bottom="10.0" left="5.0" right="5.0" top="10.0" />

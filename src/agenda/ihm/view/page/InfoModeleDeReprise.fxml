@@ -17,7 +17,7 @@
          <right>
             <VBox alignment="CENTER" spacing="20.0">
                <children>
-                  <Button fx:id="buttonAfficher" onMouseClicked="#handleAfficher" mnemonicParsing="false" text="Afficher" />
+                  <Button fx:id="buttonAfficher" onMouseClicked="#handleAfficher" mnemonicParsing="false" text="Modifier" />
                   <Button fx:id="buttonSupprimer" onMouseClicked="#handleSupprimer" mnemonicParsing="false" text="Supprimer" />
                   <Button fx:id="buttonNouvelleReprise" onMouseClicked="#handleNouvelleReprise" mnemonicParsing="false" text="Nouvelle Reprise" />
                </children>

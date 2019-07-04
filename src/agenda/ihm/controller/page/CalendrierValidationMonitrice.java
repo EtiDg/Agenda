@@ -24,8 +24,9 @@ public class CalendrierValidationMonitrice {
 	long idMonitrice;
 	@FXML BorderPane borderPane;
 	
-	public CalendrierValidationMonitrice(ArrayList<Creneau> creneaux, long idMonitrice){
-		FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("ihm/view/page/CalendrierValidationMonitrice.fxml"));
+	public CalendrierValidationMonitrice(ArrayList<Creneau> creneaux, long idMonitrice) {
+		FXMLLoader fxmlLoader = new FXMLLoader(
+				MainApp.class.getResource("ihm/view/page/CalendrierValidationMonitrice.fxml"));
 		fxmlLoader.setRoot(this);
 		fxmlLoader.setController(this);
 		try {
@@ -40,14 +41,13 @@ public class CalendrierValidationMonitrice {
 		calendrier.selectCreneaux(creneaux);
 		borderPane.setCenter(calendrier);
 	}
-	
-	public ArrayList<Creneau> getCreneaux(){
+
+	public ArrayList<Creneau> getCreneaux() {
 		return calendrier.getSelectedCreneaux();
 	}
-	
 
-	public void handleValider(ActionEvent e){
-		//fireEvent(new ValiderMonitriceEvent());
+	public void handleValider(ActionEvent e) {
+		// fireEvent(new ValiderMonitriceEvent());
 	}
-	
+
 }

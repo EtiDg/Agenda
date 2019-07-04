@@ -3,12 +3,14 @@ package agenda.ihm.controller.widget;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+import agenda.process.object.Reprise;
 import javafx.scene.layout.AnchorPane;
 
 public class DateManagement extends AnchorPane {
 	
 	String type;
 	CalendarYear calendarYear;
+	CalendarWeek calendarWeek;
 	boolean isMultiple;
 	boolean isTreveHivernale;
 	boolean isVacances;
@@ -28,6 +30,7 @@ public class DateManagement extends AnchorPane {
 		AnchorPane.setLeftAnchor(calendarYear, 5.0);
 		AnchorPane.setRightAnchor(calendarYear, 5.0);
 		AnchorPane.setBottomAnchor(calendarYear, 5.0);
+		getChildren().clear();
 		getChildren().add(calendarYear);
 	}
 	
@@ -54,9 +57,7 @@ public class DateManagement extends AnchorPane {
 				calendarYear.selectDate(selectedDates);
 			}
 		}
-		
 	}
-	
 	
 	public void selectDates(ArrayList<LocalDate> dates){
 		selectedDates = dates;
